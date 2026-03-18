@@ -4,9 +4,23 @@
 
 ---
 
-## โครงสร้างทีม / Team Structure
+## การควบคุมเอกสาร / Document Control
 
-UCCN เป็นโปรเจกต์วิจัย Phase 0 ที่ดำเนินการในรูปแบบ agile research team โดยแต่ละบทบาทมีความรับผิดชอบที่ชัดเจน
+| เวอร์ชัน | วันที่ | ผู้จัดทำ | บทบาท | การเปลี่ยนแปลง |
+|---------|-------|---------|-------|--------------|
+| v1.0 | 22/2/2026 | นายวงศธร ธน.ยอด | สถาปนิกระบบ | จัดทำสถาปัตยกรรมเบื้องต้น |
+
+---
+
+## บทบาททีมพัฒนา / Team Roles
+
+| บทบาท | ชื่อ | ความรับผิดชอบหลัก |
+|-------|-----|-----------------|
+| สถาปนิกระบบ (Architect) | นายวงศธร ธน.ยอด | ออกแบบระบบโดยรวม, กำหนดเลเยอร์, สร้างข้อตกลงระหว่างส่วนประกอบ |
+| วิศวกรเครือข่าย (Engineer) | นายพัชรพล กองแก้ว | พัฒนาโปรโตคอล, พัฒนาจำลองสถานการณ์, เขียนโค้ดหลัก |
+| ผู้เชี่ยวชาญเฉพาะด้าน (Specialist) | นายกฤษฎา นามมนต์เทียน | วิจัยความสัมพันธ์เชิงเหตุผล, กฎ Paradox, องค์ความรู้เฉพาะทาง |
+| ผู้ดูแลระบบและเครื่องมือ (DevOps) | นายศภกิตติ์ ฟันเฟือย | จัดการสภาพแวดล้อม, CI/CD, บูรณาการ, ดูแลเอกสาร |
+| ผู้ทดสอบ/ประกันคุณภาพ (Tester/QA) | นายคมชาญ น้อยเนียม | วางแผนทดสอบ, ออกแบบกรณีทดสอบ, ตรวจสอบคุณภาพ |
 
 ---
 
@@ -18,67 +32,93 @@ UCCN เป็นโปรเจกต์วิจัย Phase 0 ที่ดำ
 - **C** = Consulted (ผู้ให้คำปรึกษา)
 - **I** = Informed (ผู้รับทราบ)
 
-| Activity | Principal Researcher | Physics Advisor | Ethics Officer | Developer |
-|----------|---------------------|----------------|----------------|-----------|
-| DAFT Theory | A/R | C | I | I |
-| Physics Engine | C | A/R | I | R |
-| Simulator Dev | A | I | I | R |
-| Ethics/HITL Design | C | I | A/R | R |
-| Domain Mapping | R | C | I | I |
-| Test Planning | A | I | C | R |
-| Documentation | A/R | C | C | I |
+| Activity | Architect (วงศธร) | Engineer (พัชรพล) | Specialist (กฤษฎา) | DevOps (ศภกิตติ์) | Tester/QA (คมชาญ) |
+|----------|:-----------------:|:-----------------:|:------------------:|:-----------------:|:-----------------:|
+| DAFT Theory | A/R | I | C | I | I |
+| Physics Engine | C | A/R | C | I | I |
+| Simulator Development | A | R | I | C | I |
+| Paradox Rules & Logic | C | C | A/R | I | I |
+| Ethics / HITL Design | A | C | C | I | I |
+| Domain Mapping | A/R | I | C | I | I |
+| CI/CD & Environment | I | I | I | A/R | I |
+| Test Planning | C | I | I | I | A/R |
+| Documentation | A | I | C | R | C |
+| Code Review | A | R | C | R | C |
 
 ---
 
 ## Role Descriptions / คำอธิบายบทบาท
 
-### 1. Principal Researcher (นักวิจัยหลัก)
+### 1. สถาปนิกระบบ — นายวงศธร ธน.ยอด
 
 **ความรับผิดชอบ:**
-- กำหนดทิศทางและ scope ของงานวิจัย
-- พัฒนา DAFT theory และ formal specification
-- เขียน theoretical documentation
-- ตัดสินใจ design trade-offs
+- ออกแบบสถาปัตยกรรมโดยรวมของ UCCN Simulator
+- กำหนดเลเยอร์และ component boundaries
+- สร้างข้อตกลง (interface contracts) ระหว่างส่วนประกอบ
+- ตัดสินใจ design trade-offs หลักทุกอย่าง
+- จัดทำ Architecture Specification และ Formal Specification
 
 **KPIs:**
-- เผยแพร่ formal specification ทุก Sprint
-- ทบทวน theoretical correctness ของ feature ใหม่ทุกชิ้น
+- Architecture Spec อัปเดตทุก Sprint
+- Component interfaces ไม่มี breaking change โดยไม่แจ้งล่วงหน้า
 
-### 2. Physics Advisor (ที่ปรึกษาด้านฟิสิกส์)
+---
+
+### 2. วิศวกรเครือข่าย — นายพัชรพล กองแก้ว
 
 **ความรับผิดชอบ:**
-- ตรวจสอบความถูกต้องของสูตรฟิสิกส์ (Shannon, Lorentz, etc.)
-- ให้คำแนะนำเรื่อง signal mode properties
-- ทบทวน relativistic calculations
-- ระบุ physical limitations ของแต่ละ mode
+- พัฒนา network protocol layer (Signal Modes, Packet Transmission)
+- พัฒนา Physics Engine (Shannon Capacity, Lorentz γ, DTN Bundle)
+- เขียนโค้ดหลักของ simulator
+- Implement multi-modal simultaneous transmission
 
 **KPIs:**
-- Review Physics Engine ทุก Sprint
-- ระบุ limitations ใน documentation อย่างชัดเจน
+- Physics calculations ถูกต้องตาม test cases
+- Code delivery ตาม sprint commitment
 
-### 3. Ethics Officer (เจ้าหน้าที่จริยธรรม)
+---
+
+### 3. ผู้เชี่ยวชาญเฉพาะด้าน — นายกฤษฎา นามมนต์เทียน
 
 **ความรับผิดชอบ:**
-- ออกแบบ HITL architecture
-- ดูแล EU AI Act compliance
-- ดูแล Thai PDPA §26 compliance
-- ทบทวน DAFT → Ethics trigger mapping
+- วิจัยและกำหนดกฎ Causal Paradox (Grandfather, Causal Loop, Bootstrap)
+- พัฒนา DAFT Theory (O₄, O₆, DARS)
+- องค์ความรู้ด้าน Special Relativity และ Information Theory
+- Domain Interface Mapping (Bio, Physics, Neuro, Quantum)
 
 **KPIs:**
-- Compliance checklist ครบตาม EU AI Act Art.9, 13, 14
-- Override log ครบทุก BOUNDARY event
+- Paradox rules ครอบคลุมทุก known paradox type
+- DAFT formal specification ถูกต้องทางคณิตศาสตร์
 
-### 4. Developer (นักพัฒนา)
+---
+
+### 4. ผู้ดูแลระบบและเครื่องมือ — นายศภกิตติ์ ฟันเฟือย
 
 **ความรับผิดชอบ:**
-- Implement features ตาม sprint plan
-- Code review
-- Performance optimization
-- Canvas rendering และ animation
+- จัดการสภาพแวดล้อม development และ deployment
+- ดูแล CI/CD pipeline
+- บูรณาการ components จาก team members
+- ดูแลและจัดระเบียบเอกสารโปรเจกต์
+- GitHub repository management
 
 **KPIs:**
-- Feature delivery ตาม sprint commitment
-- Zero console errors ใน production build
+- Build pipeline ไม่มี downtime
+- เอกสารครบถ้วนและ up-to-date
+
+---
+
+### 5. ผู้ทดสอบ/ประกันคุณภาพ — นายคมชาญ น้อยเนียม
+
+**ความรับผิดชอบ:**
+- วางแผนและกำหนด test strategy ในแต่ละ Sprint
+- ออกแบบ test cases (Physics, Paradox, DAFT, HITL)
+- ทดสอบ regression หลัง integration
+- รายงาน defects และ verify fixes
+- จัดทำ test results report
+
+**KPIs:**
+- Test coverage ≥ 95% ต่อ Sprint
+- Regression test pass rate 100%
 
 ---
 
@@ -104,13 +144,20 @@ UCCN เป็นโปรเจกต์วิจัย Phase 0 ที่ดำ
 ## Escalation Path / เส้นทางการ Escalate
 
 ```
-Developer issue → Principal Researcher → Physics/Ethics Advisor
-                                        ↓
-                               กรณี BOUNDARY state จริง
-                               → Ethics Officer review
-                               → Human Override required
+Developer/Tester issue
+        ↓
+  Engineer (พัชรพล)
+        ↓
+  Architect (วงศธร) — design decisions
+  Specialist (กฤษฎา) — causal/physics issues
+  DevOps (ศภกิตติ์) — environment issues
+        ↓
+  กรณี BOUNDARY state / Ethics issue
+  → Specialist + Architect review
+  → Human Override required (HITL Level 3)
 ```
 
 ---
 
 *© UCCN Research Project — Role and Responsibility v1.0*
+*จัดทำโดย นายวงศธร ธน.ยอด | 22/2/2026*
