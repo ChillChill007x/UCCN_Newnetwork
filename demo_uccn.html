@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="stellar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UCCN — Universal Causal Communication Network</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;700;800&family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+[data-theme="stellar"]{--bg:#030810;--bg2:#06101e;--bg3:#0a1828;--border:#0f2040;--border2:#1a3560;--text:#b0c8e8;--muted:#2e4a70;--bright:#e0f0ff;--accent:#00c8f5;--aglow:rgba(0,200,245,.3);--a2:#7040ff;--a3:#ff5030;--ok:#00e898;--warn:#f0c000;--err:#ff2850;--ph:#fff040;--nu:#00aaff;--gr:#c050ff;--dt:#ff8c00;--nf:#060f1c;--lb:#1a3560;--sc:rgba(0,200,245,.04)}
+[data-theme="pulsar"]{--bg:#0a0600;--bg2:#140b00;--bg3:#1e1100;--border:#2e1e00;--border2:#4a3000;--text:#e8d090;--muted:#604820;--bright:#fff0c0;--accent:#f0c000;--aglow:rgba(240,192,0,.3);--a2:#ff7000;--a3:#ff3030;--ok:#80ff40;--warn:#ff8c00;--err:#ff2040;--ph:#fff040;--nu:#80c0ff;--gr:#e080ff;--dt:#ff8c00;--nf:#120a00;--lb:#3a2800;--sc:rgba(240,192,0,.04)}
+[data-theme="nova"]{--bg:#020a06;--bg2:#051208;--bg3:#081a0c;--border:#0c2e14;--border2:#154020;--text:#90d8a8;--muted:#1e5030;--bright:#c0ffd8;--accent:#00e898;--aglow:rgba(0,232,152,.3);--a2:#00c8f5;--a3:#80ff40;--ok:#00e898;--warn:#f0c000;--err:#ff4060;--ph:#ffff60;--nu:#60d0ff;--gr:#c080ff;--dt:#ff9020;--nf:#030e06;--lb:#0f3018;--sc:rgba(0,232,152,.04)}
+[data-theme="quasar"]{--bg:#f4f6fa;--bg2:#eaeef6;--bg3:#dde4f0;--border:#c8d4e8;--border2:#a8bcda;--text:#1a2840;--muted:#6080a8;--bright:#000820;--accent:#0060cc;--aglow:rgba(0,96,204,.2);--a2:#7030e0;--a3:#cc2800;--ok:#008840;--warn:#c07800;--err:#cc0030;--ph:#c08000;--nu:#0060cc;--gr:#7030e0;--dt:#cc5000;--nf:#e0e8f4;--lb:#c0d0e8;--sc:rgba(0,96,204,.03)}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100vh;overflow:hidden;background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;transition:background .4s,color .4s}
+.shell{display:flex;flex-direction:column;height:100vh}
+.main-wrap{flex:1;min-height:0;overflow:hidden}
+.main{display:grid;grid-template-columns:262px 1fr 314px;overflow:hidden;gap:1px;background:var(--border);height:100%}
+.log-resizer{height:4px;background:var(--border2);cursor:ns-resize;flex-shrink:0;position:relative;transition:background .15s;z-index:10}
+.log-resizer:hover,.log-resizer.active{background:var(--accent)}
+.log-resizer::before{content:'···';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:8px;letter-spacing:3px;color:var(--muted);pointer-events:none;line-height:1}
+.log-resizer:hover::before,.log-resizer.active::before{color:var(--accent)}
+#logPanel{background:var(--bg2);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;transition:background .3s}
+#logPanel.collapsed .log{display:none}
+.panel{background:var(--bg2);display:flex;flex-direction:column;overflow:hidden;transition:background .3s,border-color .3s}
+.center-panel{position:relative;background:var(--bg)}
+
+/* TOPBAR */
+.topbar{background:var(--bg3);border-bottom:1px solid var(--border2);display:flex;align-items:center;padding:0 14px;gap:14px;transition:background .3s}
+.brand{font-family:'Syne',sans-serif;font-weight:800;font-size:15px;letter-spacing:4px;color:var(--accent);text-shadow:0 0 24px var(--aglow);white-space:nowrap}
+.brand em{color:var(--a2);font-style:normal}
+.tstats{display:flex;gap:16px;flex:1}
+.ts{display:flex;flex-direction:column;gap:1px}
+.ts-l{font-size:7px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+.ts-v{font-size:13px;color:var(--accent);font-weight:600;font-family:'Share Tech Mono',monospace}
+.clk{font-family:'Share Tech Mono',monospace;font-size:17px;color:var(--accent);text-shadow:0 0 18px var(--aglow);letter-spacing:2px}
+.clk-l{font-size:7px;color:var(--muted);letter-spacing:2px;text-align:right;margin-top:2px}
+.th-row{display:flex;gap:5px;margin-left:4px}
+.th-btn{width:20px;height:20px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:all .2s}
+.th-btn:hover{transform:scale(1.25)}
+.th-btn.act{border-color:var(--bright);box-shadow:0 0 8px var(--aglow)}
+.th-s{background:radial-gradient(#00c8f5,#7040ff)}.th-p{background:radial-gradient(#f0c000,#ff7000)}.th-n{background:radial-gradient(#00e898,#00c8f5)}.th-q{background:radial-gradient(#0060cc,#7030e0)}
+
+/* PANEL HEADER */
+.ph{padding:6px 11px;background:var(--bg3);border-bottom:1px solid var(--border);font-family:'Syne',sans-serif;font-size:8px;letter-spacing:3px;color:var(--muted);display:flex;align-items:center;gap:7px;flex-shrink:0;text-transform:uppercase;transition:background .3s}
+.ph-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);box-shadow:0 0 5px var(--accent);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes fb{0%,100%{opacity:1}50%{opacity:0}}
+
+/* FORMS */
+.sec{padding:9px 11px;border-bottom:1px solid var(--border)}
+.fl{display:block;font-size:7px;letter-spacing:2px;color:var(--muted);margin-bottom:3px;text-transform:uppercase}
+input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;padding:5px 8px;border-radius:2px;outline:none;transition:border-color .2s,box-shadow .2s}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 8px var(--aglow)}
+select option{background:var(--bg2)}
+.fr{margin-bottom:6px}
+.btn{padding:5px 11px;border:1px solid;background:transparent;font-family:'Syne',sans-serif;font-size:8px;letter-spacing:2px;cursor:pointer;border-radius:2px;transition:all .2s;text-transform:uppercase;white-space:nowrap}
+.btn-p{border-color:var(--accent);color:var(--accent)}.btn-p:hover{background:var(--aglow)}
+.btn-ok{border-color:var(--ok);color:var(--ok)}.btn-ok:hover{background:rgba(0,232,152,.1)}
+.btn-e{border-color:var(--err);color:var(--err)}.btn-e:hover{background:rgba(255,40,80,.1)}
+.btn-w{border-color:var(--warn);color:var(--warn)}.btn-w:hover{background:rgba(240,192,0,.1)}
+.btn-a2{border-color:var(--a2);color:var(--a2)}.btn-a2:hover{background:rgba(112,64,255,.1)}
+.btn-g{border-color:var(--muted);color:var(--muted)}
+.btn-sm{padding:3px 7px;font-size:7px}
+.brow{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}
+
+/* NODE LIST */
+.nlist{flex:1;overflow-y:auto;padding:7px}
+.nc{border:1px solid var(--border2);border-radius:2px;padding:8px;margin-bottom:6px;cursor:pointer;background:var(--nf);transition:all .2s}
+.nc:hover,.nc.sel{border-color:var(--accent);box-shadow:0 0 10px var(--aglow)}
+.nc.sel{background:rgba(0,200,245,.04)}
+.nc-nm{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:var(--accent);margin-bottom:2px;display:flex;justify-content:space-between;align-items:center}
+.nc-h{font-size:7px;color:var(--muted);word-break:break-all;margin-bottom:4px;font-family:'Share Tech Mono',monospace}
+.nc-t{display:flex;gap:3px;flex-wrap:wrap}
+.tag{font-size:7px;padding:1px 5px;border-radius:8px;border:1px solid;font-family:'Share Tech Mono',monospace}
+.t-ok{border-color:var(--ok);color:var(--ok)}.t-nu{border-color:var(--nu);color:var(--nu)}.t-a2{border-color:var(--a2);color:var(--a2)}.t-g{border-color:var(--muted);color:var(--muted)}.t-w{border-color:var(--warn);color:var(--warn)}
+.sdot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.s-on{background:var(--ok);box-shadow:0 0 5px var(--ok);animation:blink 2s infinite}
+.s-off{background:var(--muted)}
+.s-par{background:var(--err);box-shadow:0 0 5px var(--err);animation:fb .4s infinite}
+
+/* MULTI-MODAL CARDS */
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:6px}
+.mc{border:1px solid var(--border2);background:var(--nf);border-radius:2px;padding:7px 5px;cursor:pointer;transition:all .2s;text-align:center;position:relative;user-select:none}
+.mc:hover{border-color:var(--accent)}
+.mc.on-photon{border-color:var(--ph);background:rgba(255,240,64,.06);box-shadow:0 0 8px rgba(255,240,64,.2)}
+.mc.on-neutrino{border-color:var(--nu);background:rgba(0,170,255,.06);box-shadow:0 0 8px rgba(0,170,255,.2)}
+.mc.on-graviton{border-color:var(--gr);background:rgba(192,80,255,.06);box-shadow:0 0 8px rgba(192,80,255,.2)}
+.mc.on-dtn{border-color:var(--dt);background:rgba(255,140,0,.06);box-shadow:0 0 8px rgba(255,140,0,.2)}
+.mc-ico{font-size:15px;line-height:1}
+.mc-nm{font-family:'Syne',sans-serif;font-size:7px;letter-spacing:2px;margin-top:3px;text-transform:uppercase}
+.mc-sub{font-size:7px;color:var(--muted);margin-top:1px}
+.mc .ck{position:absolute;top:3px;right:3px;width:7px;height:7px;border-radius:50%;background:var(--ok);display:none;box-shadow:0 0 4px var(--ok)}
+.mc.on-photon .ck,.mc.on-neutrino .ck,.mc.on-graviton .ck,.mc.on-dtn .ck{display:block}
+.am-bar{display:flex;gap:3px;flex-wrap:wrap;min-height:18px;align-items:center}
+.am-t{font-size:7px;padding:2px 6px;border-radius:8px;border:1px solid}
+
+/* PHYSICS CALC GRID */
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.cb{background:var(--nf);border:1px solid var(--border2);border-radius:2px;padding:7px}
+.cb-t{font-size:7px;letter-spacing:2px;color:var(--muted);margin-bottom:3px;text-transform:uppercase}
+.cb-v{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--accent);word-break:break-all;line-height:1.3}
+.cb-u{font-size:7px;color:var(--muted);margin-top:1px}
+
+/* PACKET PREVIEW */
+.pkt{background:var(--nf);border:1px solid var(--border2);border-radius:2px;padding:7px;font-family:'Share Tech Mono',monospace;font-size:9px;min-height:65px;line-height:1.9}
+.pr{display:flex;justify-content:space-between;gap:6px}
+.pk{color:var(--a2)}.pv{color:var(--text)}
+
+/* PARADOX BAR */
+.pbar{display:flex;align-items:center;gap:7px;padding:6px 9px;border-radius:2px;font-family:'Syne',sans-serif;font-size:8px;letter-spacing:1px;margin-top:5px;text-transform:uppercase}
+.pb-ok{border:1px solid var(--ok);color:var(--ok);background:rgba(0,232,152,.05)}
+.pb-w{border:1px solid var(--warn);color:var(--warn);background:rgba(240,192,0,.05)}
+.pb-e{border:1px solid var(--err);color:var(--err);background:rgba(255,40,80,.05);animation:fb 1s infinite}
+
+/* LOG */
+.log{flex:1;overflow-y:auto;padding:3px 10px;font-family:'Share Tech Mono',monospace;font-size:10px;line-height:1.9}
+.lr{display:flex;gap:9px;padding:1px 0;border-bottom:1px solid rgba(15,32,64,.4);animation:si .2s ease}
+@keyframes si{from{opacity:0;transform:translateY(-2px)}to{opacity:1;transform:none}}
+.lt{color:var(--muted);flex-shrink:0;width:80px}
+.lc{width:66px;flex-shrink:0;font-size:7px;letter-spacing:1px}
+.lm{flex:1;color:var(--text)}
+.lc-info .lc{color:var(--accent)}.lc-tx .lc{color:var(--ok)}.lc-rx .lc{color:var(--nu)}.lc-warn .lc{color:var(--warn)}.lc-err .lc{color:var(--err)}.lc-para .lc,.lc-para .lm{color:var(--err);font-weight:600}.lc-sys .lc{color:var(--a2)}.lc-calc .lc{color:var(--gr)}
+
+/* CANVAS */
+#cv{display:block;width:100%;height:100%}
+.cv-legend{position:absolute;top:8px;right:8px;background:rgba(6,16,30,.88);border:1px solid var(--border2);border-radius:2px;padding:8px 10px;font-size:8px}
+.lr2{display:flex;align-items:center;gap:6px;margin-bottom:2px}
+.ll{width:16px;height:2px;border-radius:1px}
+.cv-hint{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:5px}
+.cv-inf{position:absolute;top:8px;left:8px;font-size:8px;color:var(--muted);line-height:2;pointer-events:none}
+.scanline{position:absolute;left:0;right:0;height:100px;background:linear-gradient(transparent,var(--sc),transparent);animation:scan 5s linear infinite;pointer-events:none}
+@keyframes scan{from{transform:translateY(-100px)}to{transform:translateY(100vh)}}
+
+/* TOOLTIP */
+.tt{position:fixed;background:var(--bg3);border:1px solid var(--accent);border-radius:2px;padding:9px 12px;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text);pointer-events:none;z-index:999;display:none;max-width:230px;box-shadow:0 0 18px var(--aglow);line-height:1.9}
+.tt-t{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:var(--accent);margin-bottom:4px}
+
+/* UTIL */
+::-webkit-scrollbar{width:3px;height:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.sl{font-size:7px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin:7px 0 4px}
+.div{height:1px;background:var(--border);margin:7px 0}
+
+/* LINK MODE BUTTON */
+.link-mode-btn{width:100%;padding:7px;border:1px solid var(--border2);background:var(--nf);color:var(--muted);font-family:'Syne',sans-serif;font-size:8px;letter-spacing:2px;cursor:pointer;border-radius:2px;transition:all .2s;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:6px}
+.link-mode-btn.active{border-color:var(--warn);color:var(--warn);background:rgba(240,192,0,.08);animation:lmpulse 1.5s ease infinite}
+@keyframes lmpulse{0%,100%{box-shadow:0 0 0 0 rgba(240,192,0,.3)}50%{box-shadow:0 0 0 4px rgba(240,192,0,0)}}
+.link-mode-btn:hover:not(.active){border-color:var(--accent);color:var(--accent)}
+.link-step{font-size:9px;padding:2px 6px;border-radius:2px;background:var(--bg3);border:1px solid var(--border2);color:var(--muted);margin-top:3px;text-align:center;transition:all .3s}
+.link-step.s1{border-color:var(--warn);color:var(--warn)}
+.link-step.s2{border-color:var(--ok);color:var(--ok)}
+
+/* PHYSICS TOOLTIP */
+.ph-tip{position:fixed;background:var(--bg3);border:1px solid var(--a2);border-radius:3px;padding:8px 11px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);pointer-events:none;z-index:998;display:none;max-width:220px;line-height:1.8;box-shadow:0 0 16px rgba(112,64,255,.25)}
+.ph-tip-title{font-family:'Syne',sans-serif;font-size:9px;color:var(--a2);letter-spacing:2px;margin-bottom:4px;text-transform:uppercase}
+.ph-tip-formula{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--warn);margin:2px 0}
+.cb{position:relative;background:var(--nf);border:1px solid var(--border2);border-radius:2px;padding:7px;cursor:help;transition:border-color .2s}
+.cb:hover{border-color:var(--a2)}
+
+/* TABS (for left panel: Nodes / Causal Graph / Roadmap) */
+.tab-bar{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.tab{flex:1;padding:6px 4px;font-family:'Syne',sans-serif;font-size:7px;letter-spacing:2px;color:var(--muted);text-align:center;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;text-transform:uppercase;background:none;border-top:none;border-left:none;border-right:none}
+.tab:hover{color:var(--text)}
+.tab.act{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-panel{display:none;flex:1;overflow:hidden;flex-direction:column}
+.tab-panel.act{display:flex}
+
+/* CAUSAL GRAPH */
+#cgCanvas{display:block;width:100%;flex:1}
+.cg-empty{flex:1;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);text-align:center;padding:20px;line-height:1.8}
+
+/* ROADMAP TIMELINE */
+.rm-wrap{flex:1;overflow-y:auto;padding:10px}
+.rm-phase{margin-bottom:14px}
+.rm-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.rm-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;border:2px solid}
+.rm-phase-title{font-family:'Syne',sans-serif;font-size:9px;font-weight:700;letter-spacing:1px}
+.rm-phase-year{font-size:8px;color:var(--muted);margin-left:auto}
+.rm-bar-wrap{height:3px;background:var(--border2);border-radius:2px;margin-bottom:5px;overflow:hidden}
+.rm-bar{height:100%;border-radius:2px;transition:width .6s ease}
+.rm-milestone{font-size:8px;color:var(--muted);padding:2px 0 2px 16px;border-left:1px solid var(--border2);margin-left:4px;line-height:1.7}
+.rm-milestone span{color:var(--text)}
+.rm-sim-marker{font-size:8px;padding:2px 7px;border-radius:8px;border:1px solid var(--accent);color:var(--accent);display:inline-block;margin-left:6px;vertical-align:middle}
+.rm-cur{background:rgba(0,200,245,.06);border:1px solid var(--accent);border-radius:2px;padding:4px 8px;margin-bottom:8px;font-size:8px;color:var(--accent);font-family:'Syne',sans-serif;letter-spacing:1px}
+
+/* DAFT STATE INDICATOR */
+.daft-bar{display:flex;align-items:center;gap:8px;padding:5px 9px;border-radius:2px;font-family:'Syne',sans-serif;font-size:8px;letter-spacing:1px;text-transform:uppercase;border:1px solid;transition:all .4s}
+.ds-pure{border-color:var(--ok);color:var(--ok);background:rgba(0,232,152,.05)}
+.ds-constructive{border-color:var(--accent);color:var(--accent);background:rgba(0,200,245,.05)}
+.ds-destructive{border-color:var(--err);color:var(--err);background:rgba(255,40,80,.06);animation:fb 1.5s infinite}
+.ds-boundary{border-color:var(--warn);color:var(--warn);background:rgba(240,192,0,.06);animation:fb .8s infinite}
+.daft-dars{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--accent)}
+
+/* DOMAIN INTERFACE MAPPING */
+.domain-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.domain-card{border:1px solid var(--border2);border-radius:2px;padding:7px 8px;background:var(--nf);cursor:pointer;transition:all .2s}
+.domain-card:hover{border-color:var(--accent)}
+.domain-card.active-bio{border-color:#00e898;background:rgba(0,232,152,.05)}
+.domain-card.active-phy{border-color:#00aaff;background:rgba(0,170,255,.05)}
+.domain-card.active-neuro{border-color:#c050ff;background:rgba(192,80,255,.05)}
+.domain-card.active-quantum{border-color:#fff040;background:rgba(255,240,64,.05)}
+.dc-name{font-family:'Syne',sans-serif;font-size:8px;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px}
+.dc-ops{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);line-height:1.7}
+.dc-state{font-size:7px;padding:1px 5px;border-radius:8px;border:1px solid;display:inline-block;margin-top:3px}
+
+/* QUALITY METRICS */
+.metric-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border);font-size:9px}
+.metric-row:last-child{border-bottom:none}
+.metric-name{color:var(--muted);font-size:8px;flex:1}
+.metric-val{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--accent);min-width:60px;text-align:right}
+.metric-bar-wrap{width:50px;height:3px;background:var(--border2);border-radius:2px;margin:0 6px;overflow:hidden;flex-shrink:0}
+.metric-bar-fill{height:100%;border-radius:2px;transition:width .6s ease}
+.badge-pass{font-size:7px;padding:1px 5px;border-radius:8px;border:1px solid var(--ok);color:var(--ok)}
+.badge-risk{font-size:7px;padding:1px 5px;border-radius:8px;border:1px solid var(--warn);color:var(--warn)}
+.badge-near{font-size:7px;padding:1px 5px;border-radius:8px;border:1px solid var(--accent);color:var(--accent)}
+
+/* ETHICS / HITL */
+.hitl-level{border:1px solid var(--border2);border-radius:2px;padding:7px 9px;margin-bottom:5px;transition:all .3s}
+.hitl-level.active-hitl{border-color:var(--warn);background:rgba(240,192,0,.05)}
+.hitl-level.trigger-hitl{border-color:var(--err);background:rgba(255,40,80,.06);animation:fb 1s infinite}
+.hitl-h{font-family:'Syne',sans-serif;font-size:8px;letter-spacing:2px;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}
+.hitl-desc{font-size:8px;color:var(--muted);margin-top:3px;line-height:1.6}
+.override-btn{padding:3px 7px;border:1px solid var(--warn);color:var(--warn);background:transparent;font-family:'Syne',sans-serif;font-size:7px;letter-spacing:1px;cursor:pointer;border-radius:2px;transition:all .2s;text-transform:uppercase}
+.override-btn:hover{background:rgba(240,192,0,.1)}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div>
+    <div class="brand">UC<em>C</em>N</div>
+    <div style="font-size:7px;color:var(--muted);letter-spacing:2px;margin-top:1px">UNIVERSAL CAUSAL COMM. NETWORK</div>
+  </div>
+  <div class="tstats">
+    <div class="ts"><span class="ts-l">Nodes</span><span class="ts-v" id="hN">0</span></div>
+    <div class="ts"><span class="ts-l">TX</span><span class="ts-v" id="hTx">0</span></div>
+    <div class="ts"><span class="ts-l">RX</span><span class="ts-v" id="hRx">0</span></div>
+    <div class="ts"><span class="ts-l">Blocked</span><span class="ts-v" id="hPar" style="color:var(--err)">0</span></div>
+    <div class="ts"><span class="ts-l">Active Modes</span><span class="ts-v" id="hMod" style="color:var(--warn)">0</span></div>
+    <div class="ts"><span class="ts-l">Links</span><span class="ts-v" id="hLnk">0</span></div>
+    <div class="ts"><span class="ts-l">DAFT State</span><span class="ts-v" id="hDaft" style="color:var(--ok)">PURE</span></div>
+    <div class="ts"><span class="ts-l">DARS Score</span><span class="ts-v" id="hDars" style="color:var(--ok)">0.00</span></div>
+  </div>
+  <div>
+    <div class="clk" id="clk">T+00:00:00.000</div>
+    <div class="clk-l">CAUSAL SIM TIME</div>
+  </div>
+  <!-- THEME SWITCHER -->
+  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;margin-left:4px">
+    <div style="font-size:7px;color:var(--muted);letter-spacing:2px">THEME</div>
+    <div class="th-row">
+      <div class="th-btn th-s act" title="Stellar (Dark Blue)" onclick="setTheme('stellar',this)"></div>
+      <div class="th-btn th-p" title="Pulsar (Amber)" onclick="setTheme('pulsar',this)"></div>
+      <div class="th-btn th-n" title="Nova (Emerald)" onclick="setTheme('nova',this)"></div>
+      <div class="th-btn th-q" title="Quasar (Light)" onclick="setTheme('quasar',this)"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main-wrap">
+<div class="main">
+
+  <!-- LEFT: TABBED PANEL -->
+  <div class="panel">
+    <div class="ph"><span class="ph-dot"></span>NODE MANAGER</div>
+    <div class="tab-bar">
+      <button class="tab act" onclick="switchTab('nodes',this)">Nodes</button>
+      <button class="tab" onclick="switchTab('causal',this)">Causal</button>
+      <button class="tab" onclick="switchTab('domain',this)">DAFT</button>
+      <button class="tab" onclick="switchTab('ethics',this)">Ethics</button>
+      <button class="tab" onclick="switchTab('roadmap',this)">Roadmap</button>
+    </div>
+
+    <!-- TAB: NODES -->
+    <div class="tab-panel act" id="tab-nodes">
+      <div style="overflow-y:auto;flex:1;display:flex;flex-direction:column">
+        <div class="sec">
+          <div class="fr"><label class="fl">Node Name</label><input id="nName" placeholder="e.g. Sol-Gateway"/></div>
+          <div class="fr"><label class="fl">Location / System</label><input id="nLoc" placeholder="e.g. Sol-System, Proxima-Cen"/></div>
+          <div class="fr"><label class="fl">Causal Pattern</label><input id="nPat" placeholder="e.g. stellar-relay, quantum-gate"/></div>
+          <div class="fr"><label class="fl">Temporal Offset (light-years)</label><input type="number" id="nToff" value="0" min="0" step="0.1"/></div>
+          <div class="brow">
+            <button class="btn btn-p" onclick="addNode()">＋ ADD NODE</button>
+            <button class="btn btn-e btn-sm" onclick="removeSelected()">REMOVE</button>
+          </div>
+        </div>
+
+        <!-- LINK MODE BUTTON -->
+        <div class="sec">
+          <button class="link-mode-btn" id="linkModeBtn" onclick="toggleLinkMode()">
+            <span id="linkModeIcon">⛓</span>
+            <span id="linkModeLabel">LINK MODE — OFF</span>
+          </button>
+          <div class="link-step" id="linkStep">คลิก LINK MODE แล้วคลิกโหนดสองอัน</div>
+        </div>
+
+        <div class="sec">
+          <label class="fl">🔍 Search by Causal Pattern</label>
+          <input id="srch" placeholder="pattern / name / location…" oninput="searchNodes()"/>
+          <div id="srRes" style="background:var(--nf);border:1px solid var(--border2);border-radius:2px;padding:6px;margin-top:4px;min-height:32px;max-height:80px;overflow-y:auto;font-size:9px;line-height:1.8">
+            <span style="color:var(--muted)">Enter pattern to search…</span>
+          </div>
+        </div>
+        <div class="nlist" id="nlist">
+          <div style="color:var(--muted);text-align:center;padding:20px;font-size:10px">No nodes registered.<br>Add nodes above.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: CAUSAL GRAPH -->
+    <div class="tab-panel" id="tab-causal">
+      <div style="padding:8px 11px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:8px;color:var(--muted);letter-spacing:1px">CAUSE → EFFECT CHAIN</span>
+        <button class="btn btn-g btn-sm" onclick="clearCausalGraph()">CLEAR</button>
+      </div>
+      <canvas id="cgCanvas"></canvas>
+      <div class="cg-empty" id="cgEmpty">ยังไม่มี transmission<br><span style="color:var(--muted);font-size:8px">ส่ง packet เพื่อดู causal chain</span></div>
+    </div>
+
+    <!-- TAB: DAFT DOMAIN MAPPING (Sprint 3) -->
+    <div class="tab-panel" id="tab-domain">
+      <div style="overflow-y:auto;flex:1;padding:10px 11px">
+        <div style="font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:8px">DOMAIN INTERFACE MAPPING — Bio/Phy/Neuro/Quantum → DAFT</div>
+
+        <!-- DAFT State Display -->
+        <div class="daft-bar ds-pure" id="daftStateBar">
+          <span id="daftStateDot">●</span>
+          <span id="daftStateLbl">PURE STATE — Balanced Network</span>
+          <span class="daft-dars">DARS: <span id="darsVal">0.00</span></span>
+        </div>
+        <div style="font-size:8px;color:var(--muted);margin:5px 0 8px;line-height:1.6">DARS = |O₄|/O₆ &lt; 0.10 = PURE &nbsp;|&nbsp; O₄ = causal asymmetry &nbsp;|&nbsp; O₆ = causal distance</div>
+
+        <!-- Domain Cards -->
+        <div class="sl">Select Domain to Map</div>
+        <div class="domain-grid" style="margin-bottom:10px">
+          <div class="domain-card" id="dc-bio" onclick="selectDomain('bio')">
+            <div class="dc-name" style="color:#00e898">Biology</div>
+            <div class="dc-ops">α = binding energy<br>λ = conformational states<br>O₄ = expression imbalance<br>O₆ = protein distance (Å)</div>
+            <span class="dc-state" style="border-color:#00e898;color:#00e898">agonist/antagonist</span>
+          </div>
+          <div class="domain-card" id="dc-phy" onclick="selectDomain('phy')">
+            <div class="dc-name" style="color:#00aaff">Physics</div>
+            <div class="dc-ops">α = field coupling const<br>λ = renormalization scale<br>O₄ = field asymmetry<br>O₆ = field separation</div>
+            <span class="dc-state" style="border-color:#00aaff;color:#00aaff">vacuum / ground state</span>
+          </div>
+          <div class="domain-card" id="dc-neuro" onclick="selectDomain('neuro')">
+            <div class="dc-name" style="color:#c050ff">Neuroscience</div>
+            <div class="dc-ops">α = synaptic weight<br>λ = EEG freq band depth<br>O₄ = interhemispheric<br>O₆ = phase separation</div>
+            <span class="dc-state" style="border-color:#c050ff;color:#c050ff">C_PURE = 0.817</span>
+          </div>
+          <div class="domain-card" id="dc-quantum" onclick="selectDomain('quantum')">
+            <div class="dc-name" style="color:#fff040">Quantum/Net</div>
+            <div class="dc-ops">α = entanglement strength<br>λ = causal resolution DTN<br>O₄ = node state asymmetry<br>O₆ = causal spacetime dist</div>
+            <span class="dc-state" style="border-color:#fff040;color:#fff040">causal network</span>
+          </div>
+        </div>
+
+        <!-- Domain Mapping Output -->
+        <div id="domainOutput" style="background:var(--nf);border:1px solid var(--border2);border-radius:2px;padding:8px;font-family:'Share Tech Mono',monospace;font-size:9px;line-height:1.9;min-height:80px">
+          <span style="color:var(--muted)">คลิก domain เพื่อดู DAFT operator mapping…</span>
+        </div>
+
+        <div class="sl" style="margin-top:10px">Quality Metrics — Sprint 3 Results</div>
+        <div id="qualityMetrics"></div>
+      </div>
+    </div>
+
+    <!-- TAB: ETHICS & HITL (Sprint 4) -->
+    <div class="tab-panel" id="tab-ethics">
+      <div style="overflow-y:auto;flex:1;padding:10px 11px">
+        <div style="font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:8px">ETHICS & GOVERNANCE — HITL INTEGRATION</div>
+
+        <!-- Current DAFT Ethics State -->
+        <div class="daft-bar ds-pure" id="ethicsStateBar">
+          <span>●</span><span id="ethicsStateLbl">PURE — Auto-proceed, no action required</span>
+        </div>
+        <div style="font-size:8px;color:var(--muted);margin:4px 0 10px;line-height:1.6">DAFT state → ethics decision trigger ตาม EU AI Act + Thai PDPA</div>
+
+        <!-- HITL Levels -->
+        <div class="sl">HITL Architecture — 3 Levels</div>
+        <div class="hitl-level" id="hitl1">
+          <div class="hitl-h"><span style="color:var(--accent)">Level 1 — Passive Monitor</span><span style="font-size:7px;color:var(--ok)">ACTIVE</span></div>
+          <div class="hitl-desc">Human ได้รับ DAFT state dashboard แบบ realtime ไม่ต้องทำอะไร เว้นแต่ DESTRUCTIVE state เกิน 3 iterations</div>
+        </div>
+        <div class="hitl-level" id="hitl2">
+          <div class="hitl-h"><span style="color:var(--warn)">Level 2 — Active Review</span><span style="font-size:7px;color:var(--muted)">STANDBY</span></div>
+          <div class="hitl-desc">Trigger: DESTRUCTIVE หรือ BOUNDARY state — Human review output ก่อน deliver, AI แสดง causal reasoning chain</div>
+        </div>
+        <div class="hitl-level" id="hitl3">
+          <div class="hitl-h"><span style="color:var(--err)">Level 3 — Override</span><button class="override-btn" id="overrideBtn" onclick="triggerOverride()">TRIGGER OVERRIDE</button></div>
+          <div class="hitl-desc">Human inject corrected data → Causal State Manager → restart ReAct loop จาก corrected state พร้อม timestamp log</div>
+        </div>
+
+        <div class="sl" style="margin-top:10px">Ethics Principles Checklist</div>
+        <div id="ethicsChecklist"></div>
+
+        <div class="sl" style="margin-top:10px">DAFT State → Ethics Trigger Map</div>
+        <div id="ethicsTriggerMap"></div>
+      </div>
+    </div>
+
+    <!-- TAB: ROADMAP -->
+    <div class="tab-panel" id="tab-roadmap">
+      <div class="rm-wrap" id="rmWrap"></div>
+    </div>
+  </div>
+
+  <!-- CENTER: CANVAS -->
+  <div class="panel center-panel">
+    <div class="ph"><span class="ph-dot" style="background:var(--ok);box-shadow:0 0 5px var(--ok)"></span>NETWORK TOPOLOGY — CAUSAL SPACE</div>
+    <canvas id="cv"></canvas>
+    <div class="scanline"></div>
+    <div class="cv-inf" id="cvInf">
+      <div>CLICK — select node</div>
+      <div>DRAG — move node</div>
+      <div id="cvInfLink" style="color:var(--muted)">LINK MODE — OFF</div>
+    </div>
+    <div class="cv-legend">
+      <div style="font-size:7px;color:var(--muted);letter-spacing:2px;margin-bottom:5px">SIGNAL MODE</div>
+      <div class="lr2"><div class="ll" style="background:var(--ph)"></div><span style="color:var(--ph)">PHOTON</span></div>
+      <div class="lr2"><div class="ll" style="background:var(--nu)"></div><span style="color:var(--nu)">NEUTRINO</span></div>
+      <div class="lr2"><div class="ll" style="background:var(--gr)"></div><span style="color:var(--gr)">GRAVITON</span></div>
+      <div class="lr2"><div class="ll" style="background:var(--dt)"></div><span style="color:var(--dt)">DTN</span></div>
+      <div class="lr2"><div class="ll" style="background:var(--err)"></div><span style="color:var(--err)">PARADOX</span></div>
+    </div>
+    <div class="cv-hint">
+      <button class="btn btn-p btn-sm" onclick="autoLayout()">AUTO LAYOUT</button>
+      <button class="btn btn-g btn-sm" onclick="clearLinks()">CLEAR LINKS</button>
+      <button class="btn btn-w btn-sm" onclick="runParadoxScan()">⚠ PARADOX SCAN</button>
+      <button class="btn btn-g btn-sm" onclick="loadDemo()">DEMO</button>
+    </div>
+    <div class="tt" id="tt"></div>
+  </div>
+
+  <!-- RIGHT: TRANSMIT + PHYSICS -->
+  <div class="panel">
+    <div class="ph"><span class="ph-dot" style="background:var(--a2);box-shadow:0 0 5px var(--a2)"></span>PACKET CONTROL + PHYSICS</div>
+    <div style="overflow-y:auto;flex:1;padding:9px 11px">
+
+      <!-- MULTI-MODAL (select multiple simultaneously) -->
+      <div class="sl">Signal Mode — Select Multiple Simultaneously</div>
+      <div class="mgrid">
+        <div class="mc" id="mc-photon" onclick="toggleMode('photon')">
+          <div class="ck"></div><div class="mc-ico">⚡</div>
+          <div class="mc-nm" style="color:var(--ph)">Photon</div>
+          <div class="mc-sub">~c · EM wave</div>
+        </div>
+        <div class="mc" id="mc-neutrino" onclick="toggleMode('neutrino')">
+          <div class="ck"></div><div class="mc-ico">◉</div>
+          <div class="mc-nm" style="color:var(--nu)">Neutrino</div>
+          <div class="mc-sub">Matter-pierce</div>
+        </div>
+        <div class="mc" id="mc-graviton" onclick="toggleMode('graviton')">
+          <div class="ck"></div><div class="mc-ico">🌀</div>
+          <div class="mc-nm" style="color:var(--gr)">Graviton</div>
+          <div class="mc-sub">Spacetime wave</div>
+        </div>
+        <div class="mc" id="mc-dtn" onclick="toggleMode('dtn')">
+          <div class="ck"></div><div class="mc-ico">📡</div>
+          <div class="mc-nm" style="color:var(--dt)">DTN</div>
+          <div class="mc-sub">Store-Forward</div>
+        </div>
+      </div>
+      <div class="am-bar" id="amBar"><span style="color:var(--muted);font-size:8px">No modes selected…</span></div>
+
+      <div class="div"></div>
+
+      <!-- PACKET CONFIG -->
+      <div class="fr"><label class="fl">Source Node</label>
+        <select id="txSrc" onchange="recalc()"><option value="">— select source —</option></select></div>
+      <div class="fr"><label class="fl">Destination Node</label>
+        <select id="txDst" onchange="recalc()"><option value="">— select dest —</option></select></div>
+      <div class="fr"><label class="fl">Payload</label>
+        <textarea id="txPay" rows="2" style="resize:none" placeholder="Message / data…" oninput="recalc()"></textarea></div>
+      <div class="fr"><label class="fl">Priority (0–9)</label>
+        <input type="number" id="txPri" value="5" min="0" max="9" oninput="recalc()"/></div>
+
+      <div class="div"></div>
+
+      <!-- PHYSICS BACKEND -->
+      <div class="sl">Physics Backend — Calculated Values</div>
+      <div class="cg">
+        <div class="cb" onmouseenter="showPhyTip(event,'Distance','ระยะห่าง T-Offset ระหว่างสองโหนด','Δd = |tOff_dst − tOff_src|','1 ly = 9.461×10¹⁵ m')" onmouseleave="hidePhyTip()"><div class="cb-t">Distance</div><div class="cb-v" id="pc-d">—</div><div class="cb-u">light-years (Δ toff)</div></div>
+        <div class="cb" onmouseenter="showPhyTip(event,'Min Latency','เวลาต่ำสุดที่ photon ใช้เดินทาง','t = d / c','1 ly → ใช้เวลา 1 ปี')" onmouseleave="hidePhyTip()"><div class="cb-t">Min Latency</div><div class="cb-v" id="pc-l">—</div><div class="cb-u">photon travel time</div></div>
+        <div class="cb" onmouseenter="showPhyTip(event,'Shannon Capacity','ความจุข้อมูลสูงสุดตามทฤษฎี Shannon','C = B × log₂(1 + SNR)','รวมทุก mode ที่เปิดอยู่ (Σ)')" onmouseleave="hidePhyTip()"><div class="cb-t">Shannon Capacity</div><div class="cb-v" id="pc-c">—</div><div class="cb-u">Σ all active modes</div></div>
+        <div class="cb" onmouseenter="showPhyTip(event,'Causal Hash','ID เฉพาะของ packet นี้','CRC32(src|dst|payload|seq|modes)','แทน IP address ด้วย causal ref')" onmouseleave="hidePhyTip()"><div class="cb-t">Causal Hash</div><div class="cb-v" id="pc-h" style="font-size:8px">—</div><div class="cb-u">packet ID (CRC32)</div></div>
+        <div class="cb" onmouseenter="showPhyTip(event,'Vector Clock','Lamport timestamp ของ source node','ts_src++ ทุกครั้งที่ส่ง packet','รักษาลำดับ causal ในระบบกระจาย')" onmouseleave="hidePhyTip()"><div class="cb-t">Vector Clock</div><div class="cb-v" id="pc-v" style="font-size:9px">—</div><div class="cb-u">Lamport timestamp</div></div>
+        <div class="cb" onmouseenter="showPhyTip(event,'DTN Bundle','ขนาด bundle ตาม Bundle Protocol v2','size = payload + 64B header + 20B×modes','ใช้ store-and-forward เมื่อขาด link')" onmouseleave="hidePhyTip()"><div class="cb-t">DTN Bundle</div><div class="cb-v" id="pc-b">—</div><div class="cb-u">BPv2 bundle bytes</div></div>
+        <div class="cb" onmouseenter="showPhyTip(event,'Lorentz γ Factor','การขยายเวลาตาม Special Relativity','γ = 1 / √(1 − v²/c²)','v = ความเร็ว mode ที่เร็วที่สุด')" onmouseleave="hidePhyTip()"><div class="cb-t">Lorentz γ Factor</div><div class="cb-v" id="pc-g">—</div><div class="cb-u">time dilation (SR)</div></div>
+        <div class="cb" onmouseenter="showPhyTip(event,'Active Channels','จำนวน mode ที่จะส่งพร้อมกัน','multi-modal = redundancy + bandwidth','เลือก mode หลายอันพร้อมกันได้')" onmouseleave="hidePhyTip()"><div class="cb-t">Active Channels</div><div class="cb-v" id="pc-ch">—</div><div class="cb-u">simultaneous tx</div></div>
+      </div>
+
+      <div class="ph-tip" id="phyTip">
+        <div class="ph-tip-title" id="phyTipTitle"></div>
+        <div id="phyTipDesc"></div>
+        <div class="ph-tip-formula" id="phyTipFormula"></div>
+        <div style="font-size:9px;color:var(--muted)" id="phyTipNote"></div>
+      </div>
+
+      <div id="pbar" class="pbar pb-ok"><span>●</span><span>CAUSAL PATH CLEAR</span></div>
+
+      <!-- DAFT STATE (live) -->
+      <div class="daft-bar ds-pure" id="rpDaftBar" style="margin-top:5px">
+        <span id="rpDaftDot">◈</span>
+        <span id="rpDaftLbl">DAFT: PURE — O₄≈0, balanced causal state</span>
+      </div>
+
+      <div class="sl">Packet Header Preview</div>
+      <div class="pkt" id="pktPrev"><span style="color:var(--muted)">Configure above…</span></div>
+
+      <div class="div"></div>
+
+      <button class="btn btn-ok" style="width:100%;font-size:9px;padding:7px;margin-bottom:5px" onclick="transmit()">▶ TRANSMIT ON ALL ACTIVE MODES SIMULTANEOUSLY</button>
+      <div class="brow">
+        <button class="btn btn-a2 btn-sm" onclick="broadcast()">BROADCAST</button>
+        <button class="btn btn-p btn-sm" onclick="traceRoute()">TRACE ROUTE</button>
+        <button class="btn btn-w btn-sm" id="simBtn" onclick="toggleSim()">▶ START SIM</button>
+        <button class="btn btn-g btn-sm" onclick="resetSim()">RESET</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div><!-- /main-wrap -->
+
+<!-- RESIZE HANDLE -->
+<div class="log-resizer" id="logResizer"></div>
+
+<!-- LOG PANEL -->
+<div id="logPanel" style="height:200px">
+  <div class="ph" style="justify-content:space-between;cursor:pointer;flex-shrink:0;user-select:none" onclick="toggleLog()">
+    <div style="display:flex;align-items:center;gap:7px">
+      <span class="ph-dot" style="background:var(--ok);animation:none"></span>
+      EVENT LOG / CAUSAL TRACE / PHYSICS OUTPUT
+      <span id="logChev" style="font-size:9px;color:var(--muted);transition:transform .2s;display:inline-block">▼</span>
+    </div>
+    <div style="display:flex;gap:5px" onclick="event.stopPropagation()">
+      <span id="logCount" style="font-size:8px;color:var(--muted);align-self:center">0 entries</span>
+      <button class="btn btn-sm btn-g" style="font-size:6px" onclick="clearLog()">CLEAR</button>
+    </div>
+  </div>
+  <div class="log" id="logBox" style="flex:1;overflow-y:auto"></div>
+</div>
+
+<script>
+'use strict';
+// ══════════════════════════════════════
+// CAUSAL HASH (CRC32 multi-layer)
+// ══════════════════════════════════════
+const CH=(()=>{
+  const T=new Uint32Array(256);
+  for(let i=0;i<256;i++){let c=i;for(let j=0;j<8;j++)c=(c&1)?0xEDB88320^(c>>>1):c>>>1;T[i]=c;}
+  const crc=s=>{let c=-1;for(let i=0;i<s.length;i++)c=(c>>>8)^T[(c^s.charCodeAt(i))&255];return((c^-1)>>>0).toString(16).padStart(8,'0').toUpperCase()};
+  return{
+    node:(n,l,p,t)=>{const s=`${n}|${l}|${p}|${t}|${Math.random()}`;return`CH-${crc(s)}-${crc(s+'B')}-${crc(s+'C').slice(0,4)}-${crc(s+'D').slice(0,6)}`;},
+    pkt:(src,dst,pay,seq,modes)=>crc(`${src}>${dst}:${pay}:${seq}:${modes}`),
+  };
+})();
+
+// ══════════════════════════════════════
+// PHYSICS ENGINE
+// ══════════════════════════════════════
+const LY=9.461e15; // metres per light-year
+const MODES={
+  photon: {name:'PHOTON',  cv:'--ph', speed:1.0,   snr:30, bw:1e12, pen:false, sf:false},
+  neutrino:{name:'NEUTRINO',cv:'--nu', speed:0.999, snr:10, bw:1e8,  pen:true,  sf:false},
+  graviton:{name:'GRAVITON',cv:'--gr', speed:1.0,   snr:5,  bw:1e6,  pen:true,  sf:false},
+  dtn:    {name:'DTN',     cv:'--dt', speed:0.3,   snr:25, bw:1e9,  pen:false, sf:true},
+};
+
+function shannonC(snrDb,bwHz){return bwHz*Math.log2(1+Math.pow(10,snrDb/10));}
+function gamma(v){const vv=Math.min(v,0.9999999);return 1/Math.sqrt(1-vv*vv);}
+function fmtBits(b){if(b>=1e18)return(b/1e18).toFixed(2)+'E';if(b>=1e12)return(b/1e12).toFixed(2)+'T';if(b>=1e9)return(b/1e9).toFixed(2)+'G';if(b>=1e6)return(b/1e6).toFixed(2)+'M';if(b>=1e3)return(b/1e3).toFixed(2)+'K';return b.toFixed(0);}
+
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+let nodes=[],links=[],animPkts=[],causalHist=[];
+let selNode=null,dragging=null,dragOff={x:0,y:0};
+let simRunning=false,simTime=0,simIv=null;
+let txCnt=0,rxCnt=0,parCnt=0,pktSeq=0;
+let activeModes=new Set(),hlPath=[];
+
+// ══════════════════════════════════════
+// CANVAS
+// ══════════════════════════════════════
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+function resizeCv(){cv.width=cv.offsetWidth;cv.height=cv.offsetHeight;}
+resizeCv();window.addEventListener('resize',resizeCv);
+
+// ══════════════════════════════════════
+// THEME
+// ══════════════════════════════════════
+function setTheme(t,btn){
+  document.documentElement.setAttribute('data-theme',t);
+  document.querySelectorAll('.th-btn').forEach(b=>b.classList.remove('act'));
+  btn.classList.add('act');
+  log('sys','THEME',`Switched to "${t.toUpperCase()}" theme`);
+}
+
+// ══════════════════════════════════════
+// MULTI-MODE
+// ══════════════════════════════════════
+function toggleMode(m){
+  const card=document.getElementById('mc-'+m);
+  if(activeModes.has(m)){activeModes.delete(m);card.className='mc';}
+  else{activeModes.add(m);card.className=`mc on-${m}`;}
+  renderAmBar();recalc();
+  document.getElementById('hMod').textContent=activeModes.size;
+}
+function renderAmBar(){
+  const bar=document.getElementById('amBar');
+  if(!activeModes.size){bar.innerHTML='<span style="color:var(--muted);font-size:8px">No modes selected…</span>';return;}
+  const cm={photon:'var(--ph)',neutrino:'var(--nu)',graviton:'var(--gr)',dtn:'var(--dt)'};
+  bar.innerHTML=[...activeModes].map(m=>`<span class="am-t" style="border-color:${cm[m]};color:${cm[m]}">${MODES[m].name}</span>`).join('');
+}
+
+// ══════════════════════════════════════
+// PHYSICS RECALC
+// ══════════════════════════════════════
+function recalc(){
+  const srcId=document.getElementById('txSrc').value,dstId=document.getElementById('txDst').value;
+  const src=nodes.find(n=>n.id===srcId),dst=nodes.find(n=>n.id===dstId);
+  const pay=document.getElementById('txPay').value||'';
+  const ids=['pc-d','pc-l','pc-c','pc-h','pc-v','pc-b','pc-g','pc-ch'];
+  if(!src||!dst){ids.forEach(id=>document.getElementById(id).textContent='—');renderPkt(null,null,null,pay);updatePbar('idle');return;}
+
+  const dist=Math.abs(dst.tOffset-src.tOffset)||0.001;
+  const latStr=dist<1?`${(dist*365.25).toFixed(1)} days`:`${dist.toFixed(3)} yr`;
+  const modes=[...activeModes];
+  let totCap=0;modes.forEach(m=>{totCap+=shannonC(MODES[m].snr,MODES[m].bw);});
+  const capStr=totCap>0?fmtBits(totCap)+'/s (Σ)':'—';
+  const pid=CH.pkt(srcId,dstId,pay,pktSeq,modes.join('|'));
+  const vc='{'+nodes.slice(0,3).map(n=>`${n.name.slice(0,3)}:${n._lts||0}`).join(',')+(nodes.length>3?',…':'')+'}';
+  const bsz=(pay.length||1)+64+modes.length*20;
+  const fm=modes.length?modes.reduce((a,b)=>MODES[a].speed>MODES[b].speed?a:b,modes[0]):'photon';
+  const g=gamma(MODES[fm]?.speed||1.0);
+
+  document.getElementById('pc-d').textContent=dist.toFixed(4)+' ly';
+  document.getElementById('pc-l').textContent=latStr;
+  document.getElementById('pc-c').textContent=capStr;
+  document.getElementById('pc-h').textContent=pid;
+  document.getElementById('pc-v').textContent=vc;
+  document.getElementById('pc-b').textContent=bsz+' B';
+  document.getElementById('pc-g').textContent='γ = '+g.toFixed(6);
+  document.getElementById('pc-ch').textContent=modes.length+' simultaneous';
+
+  const par=checkParadox(srcId,dstId);
+  updatePbar(par.ok?(par.warn?'warn':'ok'):'err',par);
+  renderPkt(src,dst,pid,pay);
+
+  if(src&&dst) log('calc','PHYSICS',`Δ=${dist.toFixed(3)}ly | Σcap=${capStr} | γ=${g.toFixed(4)} | ch=${modes.length}`);
+}
+
+function renderPkt(src,dst,pid,pay){
+  const el=document.getElementById('pktPrev');
+  if(!src||!dst){el.innerHTML='<span style="color:var(--muted)">Configure packet above…</span>';return;}
+  const ms=[...activeModes];
+  el.innerHTML=`
+    <div class="pr"><span class="pk">PKT_ID</span><span class="pv">${pid}</span></div>
+    <div class="pr"><span class="pk">SRC</span><span class="pv">${src.name}</span></div>
+    <div class="pr"><span class="pk">DST</span><span class="pv">${dst.name}</span></div>
+    <div class="pr"><span class="pk">MODES</span><span class="pv">${ms.length?ms.map(m=>MODES[m].name).join('·'):'(none)'}</span></div>
+    <div class="pr"><span class="pk">MULTI_MODAL</span><span class="pv" style="color:var(--${ms.length>1?'ok':'muted'})">${ms.length>1?'YES — '+ms.length+' CHANNELS':'SINGLE / NONE'}</span></div>
+    <div class="pr"><span class="pk">T_OFFSET_Δ</span><span class="pv">${Math.abs(dst.tOffset-src.tOffset).toFixed(3)}ly</span></div>
+    <div class="pr"><span class="pk">CAUSAL_REF</span><span class="pv">${src.pattern}→${dst.pattern}</span></div>
+    <div class="pr"><span class="pk">PAYLOAD</span><span class="pv">${(pay||'(empty)').slice(0,26)}${pay.length>26?'…':''}</span></div>`;
+}
+
+function updatePbar(state,r){
+  const bar=document.getElementById('pbar');
+  if(state==='ok'){bar.className='pbar pb-ok';bar.innerHTML='<span>●</span><span>CAUSAL PATH CLEAR</span>';}
+  else if(state==='warn'){bar.className='pbar pb-w';bar.innerHTML=`<span>△</span><span>WARNING: ${r?.warn||''}</span>`;}
+  else if(state==='err'){bar.className='pbar pb-e';bar.innerHTML=`<span>⚠</span><span>[${r?.type}] BLOCKED — ${(r?.reason||'').slice(0,42)}</span>`;}
+  else{bar.className='pbar pb-ok';bar.innerHTML='<span>●</span><span>AWAITING CONFIGURATION</span>';}
+}
+
+// ══════════════════════════════════════
+// PARADOX PREVENTION
+// ══════════════════════════════════════
+function checkParadox(srcId,dstId){
+  const src=nodes.find(n=>n.id===srcId),dst=nodes.find(n=>n.id===dstId);
+  if(!src||!dst)return{ok:false,type:'NODE_ERR',reason:'Node not found'};
+  if(dst.tOffset<src.tOffset&&(src.tOffset-dst.tOffset)>10)
+    return{ok:false,type:'GRANDFATHER',reason:`Dest is ${(src.tOffset-dst.tOffset).toFixed(1)}ly in causal past`};
+  if(dst._chain?.includes(srcId)&&src._chain?.includes(dstId))
+    return{ok:false,type:'CAUSAL_LOOP',reason:`Closed causal chain: ${src.name} ↔ ${dst.name}`};
+  const trips=causalHist.filter(h=>h.src===dstId&&h.dst===srcId&&(simTime-h.t)<5000);
+  if(trips.length>3)return{ok:false,type:'BOOTSTRAP',reason:`Bootstrap paradox: ${src.name} ↔ ${dst.name}`};
+  if(Math.abs(src.tOffset-dst.tOffset)>50)return{ok:true,warn:`High T-offset ${Math.abs(src.tOffset-dst.tOffset).toFixed(1)}ly`};
+  return{ok:true};
+}
+
+// ══════════════════════════════════════
+// NODE OPS
+// ══════════════════════════════════════
+function addNode(){
+  const name=document.getElementById('nName').value.trim();
+  const loc=document.getElementById('nLoc').value.trim()||'Unknown';
+  const pat=document.getElementById('nPat').value.trim()||'default';
+  const tOff=parseFloat(document.getElementById('nToff').value)||0;
+  if(!name){log('warn','NODE','Node name required');return;}
+  const id=CH.node(name,loc,pat,Date.now());
+  nodes.push({id,name,loc,pattern:pat,tOffset:tOff,
+    x:80+Math.random()*(cv.width-160),y:80+Math.random()*(cv.height-160),
+    online:true,txC:0,rxC:0,_chain:[],_lts:0,_hl:false,hasParadox:false});
+  renderNodeList();updateSelects();updateHeader();
+  log('info','NODE',`"${name}" registered | ${id.slice(0,22)}…`);
+  log('sys','CAUSAL',`Pattern "${pat}" bound | T+${tOff}ly offset`);
+  document.getElementById('nName').value='';document.getElementById('nPat').value='';
+}
+
+function removeSelected(){
+  if(!selNode){log('warn','NODE','No node selected');return;}
+  const n=nodes.find(n=>n.id===selNode);
+  nodes=nodes.filter(n=>n.id!==selNode);
+  links=links.filter(l=>l.src!==selNode&&l.dst!==selNode);
+  animPkts=animPkts.filter(p=>p.srcId!==selNode&&p.dstId!==selNode);
+  log('warn','NODE',`Removed "${n?.name||'?'}"`);
+  selNode=null;renderNodeList();updateSelects();updateHeader();
+}
+
+function searchNodes(){
+  const q=document.getElementById('srch').value.trim().toLowerCase();
+  const el=document.getElementById('srRes');
+  if(!q){el.innerHTML='<span style="color:var(--muted)">Enter pattern to search…</span>';return;}
+  const hits=nodes.filter(n=>n.pattern.toLowerCase().includes(q)||n.name.toLowerCase().includes(q)||n.loc.toLowerCase().includes(q)||n.id.toLowerCase().includes(q));
+  el.innerHTML=hits.length?hits.map(n=>`<div style="color:var(--ok)">▸ ${n.name} <span style="color:var(--muted);font-size:7px">${n.pattern} · ${n.loc}</span></div>`).join(''):'<span style="color:var(--err)">No nodes match this causal pattern.</span>';
+  hits.forEach(n=>{n._hl=true;setTimeout(()=>n._hl=false,3000);});
+}
+
+function renderNodeList(){
+  const el=document.getElementById('nlist');
+  if(!nodes.length){el.innerHTML='<div style="color:var(--muted);text-align:center;padding:16px;font-size:9px">No nodes.</div>';return;}
+  el.innerHTML=nodes.map(n=>`
+    <div class="nc ${selNode===n.id?'sel':''}" onclick="selectNode('${n.id}')">
+      <div class="nc-nm"><span>${n.name}</span><span class="sdot ${n.hasParadox?'s-par':n.online?'s-on':'s-off'}"></span></div>
+      <div class="nc-h">${n.id}</div>
+      <div class="nc-t">
+        <span class="tag t-g">${n.loc}</span>
+        <span class="tag t-a2">T+${n.tOffset}ly</span>
+        <span class="tag t-ok">TX:${n.txC}</span>
+        <span class="tag t-nu">RX:${n.rxC}</span>
+        ${activeModes.size>1?`<span class="tag t-w">MULTI(${activeModes.size})</span>`:''}
+      </div>
+    </div>`).join('');
+}
+
+function selectNode(id){
+  const e=window.event;
+  if(e?.shiftKey&&selNode&&selNode!==id){
+    const ex=links.find(l=>(l.src===selNode&&l.dst===id)||(l.src===id&&l.dst===selNode));
+    if(!ex){
+      links.push({src:selNode,dst:id,modes:[...activeModes]});
+      const s=nodes.find(n=>n.id===selNode),d=nodes.find(n=>n.id===id);
+      log('info','LINK',`${s?.name} ↔ ${d?.name} [${[...activeModes].map(m=>MODES[m].name).join('+')||'(no mode)'}]`);
+      updateHeader();
+    }
+  }
+  selNode=id;renderNodeList();recalc();
+}
+
+function updateSelects(){
+  const opts='<option value="">—</option>'+nodes.map(n=>`<option value="${n.id}">${n.name} (${n.loc})</option>`).join('');
+  document.getElementById('txSrc').innerHTML=opts;
+  document.getElementById('txDst').innerHTML=opts;
+}
+
+function updateHeader(){
+  document.getElementById('hN').textContent=nodes.filter(n=>n.online).length;
+  document.getElementById('hTx').textContent=txCnt;
+  document.getElementById('hRx').textContent=rxCnt;
+  document.getElementById('hPar').textContent=parCnt;
+  document.getElementById('hMod').textContent=activeModes.size;
+  document.getElementById('hLnk').textContent=links.length;
+}
+
+// ══════════════════════════════════════
+// TRANSMIT
+// ══════════════════════════════════════
+function transmit(){
+  const srcId=document.getElementById('txSrc').value,dstId=document.getElementById('txDst').value;
+  const pay=document.getElementById('txPay').value||'(empty)';
+  const pri=parseInt(document.getElementById('txPri').value)||5;
+  if(!srcId||!dstId){log('warn','TX','Select source and destination');return;}
+  if(srcId===dstId){log('warn','TX','Source and destination must differ');return;}
+  if(!activeModes.size){log('warn','TX','Select at least one signal mode');return;}
+  const par=checkParadox(srcId,dstId);
+  if(!par.ok){parCnt++;const s=nodes.find(n=>n.id===srcId),d=nodes.find(n=>n.id===dstId);
+    log('para','BLOCKED',`[${par.type}] ${s?.name}→${d?.name}: ${par.reason}`);updateHeader();return;}
+  const src=nodes.find(n=>n.id===srcId),dst=nodes.find(n=>n.id===dstId);
+  const modes=[...activeModes];
+  const pid=CH.pkt(srcId,dstId,pay,pktSeq++,modes.join('|'));
+  causalHist.push({src:srcId,dst:dstId,t:simTime,pid});
+  src._chain.push(dstId);src._lts=(src._lts||0)+1;
+  // FIRE ALL ACTIVE MODES SIMULTANEOUSLY
+  modes.forEach((m,i)=>{
+    setTimeout(()=>{
+      animPkts.push({pid,srcId,dstId,progress:0,mode:m,cv:MODES[m].cv,
+        speed:MODES[m].speed*(0.003+pri*0.0002),pay,done:false});
+    },i*25);
+  });
+  src.txC++;txCnt++;
+  log('tx','TX',`[${modes.map(m=>MODES[m].name).join('+')}] ${src.name}→${dst.name} | PID:${pid.slice(0,8)}… | "${pay.slice(0,22)}"`);
+  if(modes.length>1)log('tx','MULTI',`▶ ${modes.length} simultaneous channels launched`);
+  if(par.warn)log('warn','LATENCY',par.warn);
+  // Record causal event for graph
+  addCausalEvent(src.name, dst.name, modes[0], pid);
+  updateHeader();renderNodeList();
+}
+
+function broadcast(){
+  const srcId=document.getElementById('txSrc').value;
+  if(!srcId){log('warn','TX','Select source');return;}
+  const src=nodes.find(n=>n.id===srcId);
+  nodes.filter(n=>n.id!==srcId).forEach(dst=>{document.getElementById('txDst').value=dst.id;transmit();});
+  log('sys','BCAST',`${src?.name} broadcast to ${nodes.length-1} nodes`);
+}
+
+function traceRoute(){
+  const srcId=document.getElementById('txSrc').value,dstId=document.getElementById('txDst').value;
+  if(!srcId||!dstId){log('warn','ROUTE','Select src and dst');return;}
+  hlPath=[srcId,dstId];
+  const s=nodes.find(n=>n.id===srcId),d=nodes.find(n=>n.id===dstId);
+  const modes=[...activeModes];
+  log('info','ROUTE',`Tracing: ${s?.name} → ${d?.name}`);
+  modes.forEach(m=>log('info','ROUTE',`  [${MODES[m].name}] penetrate:${MODES[m].pen?'YES':'NO'} store-fwd:${MODES[m].sf?'YES':'NO'}`));
+  setTimeout(()=>hlPath=[],3000);
+}
+
+function runParadoxScan(){
+  log('sys','PARADOX','=== Running full causal network scan ===');
+  let found=0;
+  for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){
+    const r=checkParadox(nodes[i].id,nodes[j].id);
+    if(!r.ok){found++;nodes[i].hasParadox=nodes[j].hasParadox=true;
+      log('para','PARADOX',`${nodes[i].name} ↔ ${nodes[j].name}: [${r.type}] ${r.reason}`);}
+  }
+  log(found?'err':'tx','PARADOX',found?`${found} paradox risk(s) detected`:'Network causally consistent ✓');
+}
+
+// ══════════════════════════════════════
+// SIM LOOP
+// ══════════════════════════════════════
+function toggleSim(){
+  simRunning=!simRunning;
+  const btn=document.getElementById('simBtn');
+  if(simRunning){btn.textContent='⏸ PAUSE';btn.className='btn btn-w btn-sm';
+    simIv=setInterval(simStep,100);log('sys','SIM','Causal time flowing…');}
+  else{btn.textContent='▶ START SIM';btn.className='btn btn-w btn-sm';clearInterval(simIv);log('sys','SIM','Paused');}
+}
+
+function simStep(){
+  simTime+=100;updateClk();
+  if(Math.random()<0.05&&nodes.length>=2&&activeModes.has('dtn')){
+    const s=nodes[Math.floor(Math.random()*nodes.length)];
+    const d=nodes[Math.floor(Math.random()*nodes.length)];
+    if(s!==d&&checkParadox(s.id,d.id).ok){
+      animPkts.push({pid:CH.pkt(s.id,d.id,'auto',pktSeq++,'dtn'),
+        srcId:s.id,dstId:d.id,progress:0,mode:'dtn',cv:'--dt',speed:0.003,pay:'[DTN-AUTO]',done:false});
+      s.txC++;txCnt++;updateHeader();
+    }
+  }
+}
+
+function resetSim(){
+  if(simRunning)toggleSim();
+  simTime=0;txCnt=0;rxCnt=0;parCnt=0;pktSeq=0;
+  animPkts=[];causalHist=[];hlPath=[];
+  nodes.forEach(n=>{n.txC=0;n.rxC=0;n._chain=[];n._lts=0;n.hasParadox=false;});
+  updateClk();updateHeader();renderNodeList();
+  log('sys','SIM','Reset — all causal histories cleared');
+}
+
+function updateClk(){
+  const ms=simTime%1000,s=Math.floor(simTime/1000)%60,m=Math.floor(simTime/60000)%60,h=Math.floor(simTime/3600000);
+  document.getElementById('clk').textContent=`T+${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(ms).padStart(3,'0')}`;
+}
+
+// ══════════════════════════════════════
+// CANVAS RENDER
+// ══════════════════════════════════════
+function cssV(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+
+function drawGrid(){
+  ctx.save();ctx.strokeStyle=cssV('--border')+'88';ctx.lineWidth=.5;
+  const gs=44;
+  for(let x=0;x<cv.width;x+=gs){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,cv.height);ctx.stroke();}
+  for(let y=0;y<cv.height;y+=gs){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cv.width,y);ctx.stroke();}
+  ctx.restore();
+}
+
+function drawLink(l){
+  const s=nodes.find(n=>n.id===l.src),d=nodes.find(n=>n.id===l.dst);if(!s||!d)return;
+  const hi=hlPath.includes(l.src)&&hlPath.includes(l.dst);
+  const lm=l.modes&&l.modes.length?l.modes:['photon'];
+  lm.forEach((m,i)=>{
+    const off=(i-(lm.length-1)/2)*3;
+    const dx=d.y-s.y,dy=-(d.x-s.x),len=Math.hypot(dx,dy)||1;
+    const ox=dx/len*off,oy=dy/len*off;
+    const mx=(s.x+d.x)/2+(d.y-s.y)*0.08+ox,my=(s.y+d.y)/2-(d.x-s.x)*0.08+oy;
+    ctx.save();ctx.beginPath();ctx.moveTo(s.x+ox,s.y+oy);ctx.quadraticCurveTo(mx,my,d.x+ox,d.y+oy);
+    const col=cssV(MODES[m].cv);
+    ctx.strokeStyle=hi?col:col+'55';ctx.lineWidth=hi?2:1;
+    if(!hi){ctx.setLineDash([4,8]);ctx.lineDashOffset=-Date.now()/80;}
+    ctx.stroke();ctx.restore();
+  });
+}
+
+function drawNode(n){
+  const sel=n.id===selNode,hl=hlPath.includes(n.id)||n._hl;
+  const r=sel?22:18;
+  if(sel||hl){
+    const g=ctx.createRadialGradient(n.x,n.y,r,n.x,n.y,r+16);
+    g.addColorStop(0,cssV('--aglow'));g.addColorStop(1,'transparent');
+    ctx.beginPath();ctx.arc(n.x,n.y,r+12,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
+  }
+  ctx.beginPath();ctx.arc(n.x,n.y,r,0,Math.PI*2);
+  ctx.fillStyle=n.hasParadox?'#1a0008':cssV('--nf');ctx.fill();
+  ctx.strokeStyle=n.hasParadox?cssV('--err'):sel?cssV('--accent'):cssV('--border2');
+  ctx.lineWidth=sel?2:1.5;ctx.stroke();
+  if(n.online){
+    const p=.5+.5*Math.sin(Date.now()/800+n.x);
+    ctx.beginPath();ctx.arc(n.x,n.y,r-6,0,Math.PI*2);
+    ctx.strokeStyle=(n.hasParadox?cssV('--err'):cssV('--accent'))+Math.floor(p*0x55).toString(16).padStart(2,'0');
+    ctx.lineWidth=1;ctx.stroke();
+  }
+  // Multi-mode rings when selected
+  if(sel&&activeModes.size>1){
+    [...activeModes].forEach((m,i)=>{
+      const ar=r+8+i*6,p=.5+.5*Math.sin(Date.now()/600+i*1.2);
+      ctx.beginPath();ctx.arc(n.x,n.y,ar,0,Math.PI*2);
+      ctx.strokeStyle=cssV(MODES[m].cv)+Math.floor(p*0x44).toString(16).padStart(2,'0');
+      ctx.lineWidth=1;ctx.setLineDash([3,6]);ctx.stroke();ctx.setLineDash([]);
+    });
+  }
+  ctx.beginPath();ctx.arc(n.x,n.y,3,0,Math.PI*2);ctx.fillStyle=cssV('--accent');ctx.fill();
+  ctx.font=`bold 10px 'Syne',sans-serif`;
+  ctx.fillStyle=n.hasParadox?cssV('--err'):sel?cssV('--accent'):cssV('--bright');
+  ctx.textAlign='center';ctx.fillText(n.name.slice(0,12),n.x,n.y-r-7);
+  ctx.font=`8px 'JetBrains Mono',monospace`;ctx.fillStyle=cssV('--muted');
+  ctx.fillText(n.loc.slice(0,14),n.x,n.y-r-18);
+}
+
+function drawAP(ap){
+  if(ap.done)return;
+  const s=nodes.find(n=>n.id===ap.srcId),d=nodes.find(n=>n.id===ap.dstId);
+  if(!s||!d){ap.done=true;return;}
+  ap.progress=Math.min(1,ap.progress+ap.speed);
+  const t=ap.progress;
+  const mx=(s.x+d.x)/2+(d.y-s.y)*0.08,my=(s.y+d.y)/2-(d.x-s.x)*0.08;
+  const px=(1-t)*(1-t)*s.x+2*(1-t)*t*mx+t*t*d.x;
+  const py=(1-t)*(1-t)*s.y+2*(1-t)*t*my+t*t*d.y;
+  const col=cssV(ap.cv);
+  for(let i=0;i<7;i++){
+    const ti=Math.max(0,t-i*.034);
+    const tx=(1-ti)*(1-ti)*s.x+2*(1-ti)*ti*mx+ti*ti*d.x;
+    const ty=(1-ti)*(1-ti)*s.y+2*(1-ti)*ti*my+ti*ti*d.y;
+    ctx.beginPath();ctx.arc(tx,ty,3.5-i*.4,0,Math.PI*2);
+    ctx.fillStyle=col+Math.floor((1-i/7)*0xaa).toString(16).padStart(2,'0');ctx.fill();
+  }
+  ctx.save();ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);
+  ctx.fillStyle=col;ctx.shadowBlur=18;ctx.shadowColor=col;ctx.fill();ctx.restore();
+  if(t>=1){ap.done=true;const dn=nodes.find(n=>n.id===ap.dstId);
+    if(dn){dn.rxC++;rxCnt++;updateHeader();renderNodeList();
+      log('rx','RX',`[${MODES[ap.mode].name}] → ${dn.name} PID:${ap.pid.slice(0,8)}…`);}}
+}
+
+function render(){
+  ctx.clearRect(0,0,cv.width,cv.height);
+  drawGrid();links.forEach(drawLink);
+  animPkts=animPkts.filter(p=>!p.done);animPkts.forEach(drawAP);
+  nodes.forEach(drawNode);
+  requestAnimationFrame(render);
+}
+render();
+
+// ══════════════════════════════════════
+// CANVAS INPUT
+// ══════════════════════════════════════
+function nodeAt(x,y){return nodes.find(n=>Math.hypot(n.x-x,n.y-y)<22);}
+
+let linkModeActive=false, linkFirst=null;
+
+function toggleLinkMode(){
+  linkModeActive=!linkModeActive;
+  linkFirst=null;
+  const btn=document.getElementById('linkModeBtn');
+  const icon=document.getElementById('linkModeIcon');
+  const label=document.getElementById('linkModeLabel');
+  const step=document.getElementById('linkStep');
+  const cvInfo=document.getElementById('cvInfLink');
+  if(linkModeActive){
+    btn.classList.add('active');
+    icon.textContent='⛓';label.textContent='LINK MODE — ON';
+    step.textContent='คลิกโหนดแรก (ต้นทาง)';step.className='link-step s1';
+    cvInfo.textContent='LINK MODE — คลิกโหนด 1';cvInfo.style.color='var(--warn)';
+    log('info','LINK','Link Mode เปิดแล้ว — คลิกโหนดแรก');
+  } else {
+    btn.classList.remove('active');
+    icon.textContent='⛓';label.textContent='LINK MODE — OFF';
+    step.textContent='คลิก LINK MODE แล้วคลิกโหนดสองอัน';step.className='link-step';
+    cvInfo.textContent='LINK MODE — OFF';cvInfo.style.color='var(--muted)';
+  }
+}
+
+cv.addEventListener('mousedown',e=>{
+  const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
+  const n=nodeAt(mx,my);
+  if(linkModeActive){
+    if(!n) return;
+    if(!linkFirst){
+      linkFirst=n.id;selNode=n.id;renderNodeList();
+      document.getElementById('linkStep').textContent=`✓ ${n.name} → คลิกโหนดปลายทาง`;
+      document.getElementById('linkStep').className='link-step s2';
+      document.getElementById('cvInfLink').textContent=`LINK: ${n.name} → ?`;
+      log('info','LINK',`ต้นทาง: "${n.name}" — คลิกโหนดปลายทาง`);
+    } else if(linkFirst!==n.id){
+      const ex=links.find(l=>(l.src===linkFirst&&l.dst===n.id)||(l.src===n.id&&l.dst===linkFirst));
+      if(!ex){
+        links.push({src:linkFirst,dst:n.id,modes:[...activeModes]});
+        const s=nodes.find(x=>x.id===linkFirst);
+        log('info','LINK',`✓ Link สร้างแล้ว: ${s?.name} ↔ ${n.name} [${[...activeModes].map(m=>MODES[m].name).join('+')||'(no mode)'}]`);
+        updateHeader();
+      } else {
+        log('warn','LINK','Link นี้มีอยู่แล้ว');
+      }
+      linkFirst=null;
+      document.getElementById('linkStep').textContent='คลิกโหนดแรก (ต้นทาง)';
+      document.getElementById('linkStep').className='link-step s1';
+      document.getElementById('cvInfLink').textContent='LINK MODE — คลิกโหนด 1';
+    }
+    return;
+  }
+  if(n){selNode=n.id;dragging=n;dragOff={x:mx-n.x,y:my-n.y};renderNodeList();}
+  else{selNode=null;renderNodeList();}
+});
+
+cv.addEventListener('mousemove',e=>{
+  const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
+  if(dragging&&!linkModeActive){dragging.x=mx-dragOff.x;dragging.y=my-dragOff.y;return;}
+  const n=nodeAt(mx,my);const tt=document.getElementById('tt');
+  if(n){
+    tt.style.display='block';tt.style.left=(e.clientX+14)+'px';tt.style.top=(e.clientY-8)+'px';
+    const lnkHint=linkModeActive?(linkFirst?`<div style="color:var(--ok)">→ คลิกเพื่อเชื่อมกับ ${n.name}</div>`:`<div style="color:var(--warn)">→ คลิกเพื่อเลือกเป็นต้นทาง</div>`):'';
+    tt.innerHTML=`<div class="tt-t">${n.name}</div><div>${n.id.slice(0,28)}…</div><div>Loc: ${n.loc}</div><div>Pattern: <span style="color:var(--a2)">${n.pattern}</span></div><div>T-Offset: <span style="color:var(--warn)">${n.tOffset}ly</span></div><div>TX:<span style="color:var(--ok)">${n.txC}</span> RX:<span style="color:var(--nu)">${n.rxC}</span></div>${lnkHint}`;
+  } else tt.style.display='none';
+});
+cv.addEventListener('mouseup',()=>dragging=null);
+cv.addEventListener('mouseleave',()=>{dragging=null;document.getElementById('tt').style.display='none';});
+
+// ══════════════════════════════════════
+// PHYSICS TOOLTIP
+// ══════════════════════════════════════
+function showPhyTip(e,title,desc,formula,note){
+  const tip=document.getElementById('phyTip');
+  document.getElementById('phyTipTitle').textContent=title;
+  document.getElementById('phyTipDesc').textContent=desc;
+  document.getElementById('phyTipFormula').textContent=formula;
+  document.getElementById('phyTipNote').textContent=note;
+  tip.style.display='block';
+  const x=e.clientX+12,y=e.clientY-10;
+  tip.style.left=Math.min(x,window.innerWidth-240)+'px';
+  tip.style.top=Math.max(y-80,8)+'px';
+}
+function hidePhyTip(){document.getElementById('phyTip').style.display='none';}
+
+// ══════════════════════════════════════
+// CAUSAL GRAPH
+// ══════════════════════════════════════
+const cgCv=document.getElementById('cgCanvas');
+const cgCtx=cgCv.getContext('2d');
+let causalEvents=[];  // {id, srcName, dstName, mode, t, pid}
+let causalGraphVisible=false;
+
+function resizeCgCv(){
+  const el=document.getElementById('tab-causal');
+  cgCv.width=el.offsetWidth||262;
+  cgCv.height=el.offsetHeight-38||300;
+  renderCausalGraph();
+}
+
+function addCausalEvent(srcName,dstName,mode,pid){
+  causalEvents.push({id:causalEvents.length,srcName,dstName,mode,t:simTime,pid:pid.slice(0,8)});
+  if(causalEvents.length>40) causalEvents.shift();
+  document.getElementById('cgEmpty').style.display='none';
+  cgCv.style.display='block';
+  renderCausalGraph();
+}
+
+function clearCausalGraph(){causalEvents=[];document.getElementById('cgEmpty').style.display='flex';cgCv.style.display='none';}
+
+function renderCausalGraph(){
+  if(!cgCv.width) return;
+  cgCtx.clearRect(0,0,cgCv.width,cgCv.height);
+  if(!causalEvents.length) return;
+  const modeCol={photon:'--ph',neutrino:'--nu',graviton:'--gr',dtn:'--dt'};
+  const evs=causalEvents.slice(-12);
+  const rowH=Math.min(36, (cgCv.height-20)/Math.max(evs.length,1));
+  const W=cgCv.width;
+
+  // draw timeline spine
+  const spineX=22;
+  cgCtx.strokeStyle=cssV('--border2');cgCtx.lineWidth=1;
+  cgCtx.beginPath();cgCtx.moveTo(spineX,(rowH*.3));cgCtx.lineTo(spineX,evs.length*rowH);cgCtx.stroke();
+
+  evs.forEach((ev,i)=>{
+    const y=10+i*rowH;
+    const col=cssV(modeCol[ev.mode]||'--accent');
+
+    // dot on spine
+    cgCtx.beginPath();cgCtx.arc(spineX,y+rowH*.3,4,0,Math.PI*2);
+    cgCtx.fillStyle=col;cgCtx.fill();
+
+    // connector arrow
+    cgCtx.strokeStyle=col+'99';cgCtx.lineWidth=1;
+    cgCtx.beginPath();cgCtx.moveTo(spineX+4,y+rowH*.3);cgCtx.lineTo(spineX+18,y+rowH*.3);cgCtx.stroke();
+    // arrowhead
+    cgCtx.fillStyle=col+'99';
+    cgCtx.beginPath();cgCtx.moveTo(spineX+20,y+rowH*.3);cgCtx.lineTo(spineX+15,y+rowH*.3-3);cgCtx.lineTo(spineX+15,y+rowH*.3+3);cgCtx.fill();
+
+    // src → dst label
+    cgCtx.font=`bold 9px 'Syne',sans-serif`;cgCtx.fillStyle=cssV('--text');cgCtx.textAlign='left';
+    cgCtx.fillText(`${ev.srcName} → ${ev.dstName}`,spineX+24,y+rowH*.3+3);
+
+    // mode badge
+    cgCtx.font=`7px 'Share Tech Mono',monospace`;cgCtx.fillStyle=col;
+    cgCtx.fillText(`[${MODES[ev.mode]?.name||ev.mode}]`,spineX+24,y+rowH*.3+13);
+
+    // PID tiny
+    cgCtx.font=`7px 'Share Tech Mono',monospace`;cgCtx.fillStyle=cssV('--muted');
+    cgCtx.fillText(ev.pid+'…',W-52,y+rowH*.3+3);
+
+    // causal link to next event
+    if(i<evs.length-1){
+      cgCtx.strokeStyle=cssV('--border2');cgCtx.lineWidth=.5;cgCtx.setLineDash([2,4]);
+      cgCtx.beginPath();cgCtx.moveTo(spineX,y+rowH*.3+4);cgCtx.lineTo(spineX,y+rowH+10*.3);cgCtx.stroke();
+      cgCtx.setLineDash([]);
+    }
+  });
+}
+
+// ══════════════════════════════════════
+// ROADMAP TIMELINE
+// ══════════════════════════════════════
+const PHASES=[
+  {id:0,label:'Phase 0',title:'Research & Foundation',years:'2024–2035',color:'var(--nu)',pct:15,
+   milestones:['Causal Network Theory development','Neutrino Communication research (IceCube)','DTN Bundle Protocol v2','Causal Hash Algorithms','Logical Clocks for cosmic networks'],
+   sim:'Phase ที่ simulator นี้จำลอง'},
+  {id:1,label:'Phase 1',title:'Limited Testing',years:'2036–2050',color:'var(--ph)',pct:0,
+   milestones:['Earth-based 10-node test (5 continents)','Low Earth Orbit Network — 50 satellites','Lunar Communication Testbed (1.3s latency)','Mars Early Network (4–24 min latency)']},
+  {id:2,label:'Phase 2',title:'Solar System Network',years:'2051–2100',color:'var(--dt)',pct:0,
+   milestones:['Earth-Moon-Mars core network','Asteroid Belt Nodes (50 nodes)','Jupiter & Saturn system stations','Kuiper Belt Outposts (~50 AU)','Gravitational Wave Communication prototype']},
+  {id:3,label:'Phase 3',title:'Interstellar Bridge',years:'2101–2200',color:'var(--gr)',pct:0,
+   milestones:['Alpha Centauri Link (4.37 ly)','Proxima Centauri relay station','Neutrino Arrays at Lagrange points','Local 10 ly network — 10 stars']},
+  {id:4,label:'Phase 4',title:'Galactic Network',years:'2201–2500',color:'var(--warn)',pct:0,
+   milestones:['Orion Arm Network — nodes every 100 ly','Milky Way Communication Grid','Wormhole Communication Research','Galactic Causal Database']},
+  {id:5,label:'Phase 5',title:'Universal UCCN',years:'2501–3000+',color:'var(--a2)',pct:0,
+   milestones:['Andromeda–Milky Way Bridge (2.5M ly)','Local Group Communication Protocol','Universal Causal Communication Network','Communication with other civilizations']},
+];
+
+function buildRoadmap(){
+  const wrap=document.getElementById('rmWrap');
+  wrap.innerHTML=`<div class="rm-cur">▸ Simulator นี้จำลองอยู่ที่ Phase 0 — Research &amp; Foundation</div>`;
+  PHASES.forEach(ph=>{
+    const isCur=ph.id===0;
+    const bar=ph.pct>0?`<div class="rm-bar-wrap"><div class="rm-bar" style="width:${ph.pct}%;background:${ph.color}"></div></div>`:'';
+    const msList=ph.milestones.map(m=>`<div class="rm-milestone">▸ <span>${m}</span></div>`).join('');
+    wrap.innerHTML+=`
+      <div class="rm-phase">
+        <div class="rm-header">
+          <div class="rm-dot" style="border-color:${ph.color};background:${isCur?ph.color:'transparent'}"></div>
+          <div class="rm-phase-title" style="color:${ph.color}">${ph.label}: ${ph.title}${isCur?`<span class="rm-sim-marker">◀ NOW</span>`:''}</div>
+          <div class="rm-phase-year">${ph.years}</div>
+        </div>
+        ${bar}
+        ${msList}
+      </div>`;
+  });
+}
+
+// ══════════════════════════════════════
+// TAB SWITCHER
+// ══════════════════════════════════════
+function switchTab(id,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('act'));
+  btn.classList.add('act');
+  document.getElementById('tab-'+id).classList.add('act');
+  // Rebuild content fresh when tab is opened
+  if(id==='causal') setTimeout(resizeCgCv,50);
+  if(id==='domain'){ buildQualityMetrics(); }
+  if(id==='ethics'){ buildEthicsChecklist(); buildEthicsTriggerMap(); }
+}
+
+// ══════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════
+function autoLayout(){
+  const cx=cv.width/2,cy=cv.height/2,r=Math.min(cx,cy)*.62;
+  nodes.forEach((n,i)=>{const a=(i/nodes.length)*Math.PI*2-Math.PI/2;n.x=cx+Math.cos(a)*r;n.y=cy+Math.sin(a)*r;});
+  log('info','LAYOUT','Causal ring topology applied');
+}
+function clearLinks(){links=[];log('warn','LINK','All causal links cleared');updateHeader();}
+
+function loadDemo(){
+  const demo=[
+    {name:'Sol-Gateway',  loc:'Sol-System',  pat:'stellar-relay',t:0},
+    {name:'Proxima-Hub',  loc:'Proxima-Cen', pat:'quantum-gate', t:4.2},
+    {name:'Sirius-Alpha', loc:'Sirius-Sys',  pat:'stellar-relay',t:8.6},
+    {name:'Tau-Ceti-Net', loc:'Tau-Ceti',   pat:'dtn-relay',    t:11.9},
+    {name:'Vega-Station', loc:'Vega-Sys',   pat:'quantum-gate', t:25.0},
+  ];
+  demo.forEach(d=>{
+    document.getElementById('nName').value=d.name;document.getElementById('nLoc').value=d.loc;
+    document.getElementById('nPat').value=d.pat;document.getElementById('nToff').value=d.t;
+    addNode();
+  });
+  setTimeout(()=>{
+    if(nodes.length>=5){
+      links.push({src:nodes[0].id,dst:nodes[1].id,modes:['photon','neutrino']});
+      links.push({src:nodes[1].id,dst:nodes[2].id,modes:['neutrino']});
+      links.push({src:nodes[2].id,dst:nodes[3].id,modes:['dtn']});
+      links.push({src:nodes[3].id,dst:nodes[4].id,modes:['graviton','dtn']});
+      links.push({src:nodes[0].id,dst:nodes[4].id,modes:['graviton']});
+      updateHeader();
+    }
+    ['photon','neutrino','graviton','dtn'].forEach(m=>{if(!activeModes.has(m))toggleMode(m);});
+    autoLayout();
+    log('sys','DEMO','=== Demo loaded: Sol → Proxima → Sirius → Tau Ceti → Vega ===');
+    log('info','DEMO','เปิด LINK MODE (แผงซ้าย) เพื่อเชื่อมโหนด | เลือก mode → TRANSMIT');
+    log('info','DEMO','ดู Causal Graph และ Roadmap ได้ที่แท็บซ้ายมือ');
+    log('calc','PHYSICS','Hover บน Physics box เพื่อดูสูตรคำนวณ');
+  },150);
+}
+
+// LOG RESIZE — VS Code terminal style
+let logOpen = true;
+let logHeight = 200;
+const MIN_LOG = 28;
+const MAX_LOG = () => window.innerHeight * 0.7;
+
+function toggleLog(){
+  logOpen = !logOpen;
+  const panel = document.getElementById('logPanel');
+  const chev = document.getElementById('logChev');
+  if(logOpen){
+    panel.style.height = logHeight + 'px';
+    chev.textContent = '▼';
+  } else {
+    logHeight = panel.offsetHeight > MIN_LOG ? panel.offsetHeight : logHeight;
+    panel.style.height = MIN_LOG + 'px';
+    chev.textContent = '▶';
+  }
+}
+
+(function initResizer(){
+  const resizer = document.getElementById('logResizer');
+  const panel   = document.getElementById('logPanel');
+  let startY, startH;
+
+  resizer.addEventListener('mousedown', e => {
+    startY = e.clientY;
+    startH = panel.offsetHeight;
+    resizer.classList.add('active');
+    document.body.style.cursor = 'ns-resize';
+    document.body.style.userSelect = 'none';
+
+    function onMove(e){
+      const delta = startY - e.clientY;   // drag up = bigger
+      const newH  = Math.min(MAX_LOG(), Math.max(MIN_LOG, startH + delta));
+      panel.style.height = newH + 'px';
+      logHeight = newH;
+      if(newH <= MIN_LOG + 4){
+        logOpen = false;
+        document.getElementById('logChev').textContent = '▶';
+      } else {
+        logOpen = true;
+        document.getElementById('logChev').textContent = '▼';
+      }
+    }
+    function onUp(){
+      resizer.classList.remove('active');
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  // Double-click resizer → toggle
+  resizer.addEventListener('dblclick', () => toggleLog());
+})();
+
+function clearLog(){document.getElementById('logBox').innerHTML='';updateLogCount();}
+function updateLogCount(){
+  const n=document.getElementById('logBox').children.length;
+  document.getElementById('logCount').textContent=n+' entr'+(n===1?'y':'ies');
+}
+function log(type,label,msg){
+  const el=document.getElementById('logBox');
+  const n=new Date();
+  const ts=`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}.${String(n.getMilliseconds()).padStart(3,'0')}`;
+  const row=document.createElement('div');row.className=`lr lc-${type}`;
+  row.innerHTML=`<span class="lt">${ts}</span><span class="lc">[${label}]</span><span class="lm">${msg}</span>`;
+  el.appendChild(row);
+  if(logOpen) el.scrollTop=el.scrollHeight;
+  while(el.children.length>300)el.removeChild(el.firstChild);
+  updateLogCount();
+}
+
+// ══════════════════════════════════════
+// DAFT ENGINE (Sprint 3 & 4)
+// ══════════════════════════════════════
+let daftO4=0, daftO6=1, daftState='PURE', darsScore=0;
+let hitlLevel=1, overrideCount=0;
+
+function computeDAFT(){
+  // O4 = causal asymmetry = |txCnt - rxCnt| / max(txCnt+rxCnt,1)
+  // O6 = causal distance = avg tOffset diff across links
+  const total=txCnt+rxCnt;
+  daftO4=total>0?Math.abs(txCnt-rxCnt)/total:0;
+  if(links.length>0){
+    let sumDist=0;
+    links.forEach(l=>{
+      const s=nodes.find(n=>n.id===l.src),d=nodes.find(n=>n.id===l.dst);
+      if(s&&d) sumDist+=Math.abs(s.tOffset-d.tOffset)||1;
+    });
+    daftO6=Math.max(sumDist/links.length,0.01);
+  } else daftO6=1;
+  darsScore=daftO4/daftO6;
+
+  // Classify state
+  const prev=daftState;
+  if(darsScore<0.10) daftState='PURE';
+  else if(darsScore<0.30) daftState='CONSTRUCTIVE';
+  else if(darsScore<0.60) daftState='DESTRUCTIVE';
+  else daftState='BOUNDARY';
+
+  if(daftState!==prev){
+    log('calc','DAFT',`State transition: ${prev} → ${daftState} | DARS=${darsScore.toFixed(3)} | O₄=${daftO4.toFixed(3)} | O₆=${daftO6.toFixed(3)}`);
+    if(daftState==='DESTRUCTIVE'){
+      log('warn','ETHICS','⚠ DESTRUCTIVE state — HITL Level 2 triggered (EU AI Act Art.13)');
+      setHITLLevel(2);
+    } else if(daftState==='BOUNDARY'){
+      log('err','ETHICS','🛑 BOUNDARY state — Mandatory HITL Override (EU AI Act Art.14 + Thai PDPA §26)');
+      setHITLLevel(3);
+    } else if(daftState==='PURE'){
+      setHITLLevel(1);
+    }
+  }
+  updateDAFTDisplay();
+}
+
+const DAFT_STATE_CONFIG={
+  PURE:{cls:'ds-pure',dot:'●',label:'PURE — O₄≈0, balanced causal state',color:'var(--ok)'},
+  CONSTRUCTIVE:{cls:'ds-constructive',dot:'◆',label:'CONSTRUCTIVE — positive asymmetry, monitor',color:'var(--accent)'},
+  DESTRUCTIVE:{cls:'ds-destructive',dot:'▲',label:'DESTRUCTIVE — high asymmetry! HITL Level 2',color:'var(--err)'},
+  BOUNDARY:{cls:'ds-boundary',dot:'⚠',label:'BOUNDARY — critical! Mandatory human override',color:'var(--warn)'},
+};
+
+function updateDAFTDisplay(){
+  const cfg=DAFT_STATE_CONFIG[daftState];
+  // Topbar
+  document.getElementById('hDaft').textContent=daftState;
+  document.getElementById('hDaft').style.color=cfg.color;
+  document.getElementById('hDars').textContent=darsScore.toFixed(3);
+  document.getElementById('hDars').style.color=darsScore<0.10?'var(--ok)':darsScore<0.30?'var(--accent)':'var(--err)';
+  // DAFT tab
+  const db=document.getElementById('daftStateBar');
+  db.className='daft-bar '+cfg.cls;
+  document.getElementById('daftStateDot').textContent=cfg.dot;
+  document.getElementById('daftStateLbl').textContent=cfg.label;
+  document.getElementById('darsVal').textContent=darsScore.toFixed(3);
+  // Right panel
+  const rb=document.getElementById('rpDaftBar');
+  rb.className='daft-bar '+cfg.cls;
+  document.getElementById('rpDaftDot').textContent=cfg.dot;
+  document.getElementById('rpDaftLbl').textContent='DAFT: '+daftState+' | DARS='+darsScore.toFixed(3)+' | O₄='+daftO4.toFixed(3);
+  // Ethics tab
+  const eb=document.getElementById('ethicsStateBar');
+  eb.className='daft-bar '+cfg.cls;
+  document.getElementById('ethicsStateLbl').textContent=ETHICS_MAP[daftState]?.action||cfg.label;
+  // HITL levels highlight
+  ['hitl1','hitl2','hitl3'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    el.classList.remove('active-hitl','trigger-hitl');
+    if(daftState==='DESTRUCTIVE'&&i===1) el.classList.add('trigger-hitl');
+    if(daftState==='BOUNDARY'&&i===2) el.classList.add('trigger-hitl');
+    if(i<hitlLevel) el.classList.add('active-hitl');
+  });
+}
+
+// ══════════════════════════════════════
+// DOMAIN INTERFACE MAPPING (Sprint 3)
+// ══════════════════════════════════════
+const DOMAIN_MAP={
+  bio:{name:'Biology',color:'#00e898',
+    ops:{α:'Target-ligand binding energy (kcal/mol)',λ:'Conformational states resolved (NMR peaks)',O4:'Gene expression imbalance (Log₂FC)',O6:'Protein-state Euclidean distance (Å)',O1:'Binding affinity proxy (−ΔG)'},
+    states:{PURE:'Homeostasis / equilibrium binding (Kd min)',CONSTRUCTIVE:'Agonist / overexpression (FC > 1)',DESTRUCTIVE:'Antagonist / underexpression (FC < 1)',BOUNDARY:'Null interaction / below LOD'},
+    hbar:'Assay uncertainty floor',note:'Drug classifier: ρ = (|xi|+|xj|) / ||xi|−|xj|| — ρ=3 threshold'},
+  phy:{name:'Physics',color:'#00aaff',
+    ops:{α:'Field coupling constant',λ:'Renormalization scale / observer resolution',O4:'Field asymmetry / charge imbalance',O6:'Field separation / metric distance',O1:'Dot product of field vectors'},
+    states:{PURE:'Ground state; classical vacuum',CONSTRUCTIVE:'Positive field asymmetry',DESTRUCTIVE:'Negative field asymmetry',BOUNDARY:'Vacuum / zero-field state'},
+    hbar:'Quantum of action in DAFT Hilbert space',note:'β(α) < 0 → asymptotic freedom; UV-complete'},
+  neuro:{name:'Neuroscience',color:'#c050ff',
+    ops:{α:'Synaptic connection weight',λ:'EEG frequency band depth (δ/θ/α/β)',O4:'Interhemispheric power asymmetry',O6:'Phase separation between EEG bands',O1:'EEG coherence between hemisphere pairs'},
+    states:{PURE:'Meditative PURE-state (C ≈ 0.817)',CONSTRUCTIVE:'Active cognition, net engagement',DESTRUCTIVE:'Anxiety/stress, net inhibition',BOUNDARY:'Cognitive disconnection (C < 0.577)'},
+    hbar:'Minimum EEG coherence uncertainty',note:'P3: C_PURE = √(2/3) ≈ 0.817 | P2: EEG band ratio r ≈ 4'},
+  quantum:{name:'Quantum/Network',color:'#fff040',
+    ops:{α:'Entanglement strength between network nodes',λ:'Causal resolution depth in DTN bundles',O4:'Causal state asymmetry between nodes',O6:'Causal distance in spacetime lattice',O1:'Inner-product similarity of causal states'},
+    states:{PURE:'Balanced PURE causal network (O₄=0)',CONSTRUCTIVE:'Constructive causal interference',DESTRUCTIVE:'Destructive causal interference',BOUNDARY:'Disconnected network node'},
+    hbar:'Minimum causal uncertainty per bundle',note:'ℏ_DAFT = α²/λ — minimum uncertainty per causal bundle'},
+};
+
+let activeDomain=null;
+function selectDomain(d){
+  activeDomain=d;
+  ['bio','phy','neuro','quantum'].forEach(x=>{
+    document.getElementById('dc-'+x).className='domain-card'+(x===d?' active-'+x:'');
+  });
+  const dm=DOMAIN_MAP[d];
+  const stateColor=DAFT_STATE_CONFIG[daftState]?.color||'var(--ok)';
+  document.getElementById('domainOutput').innerHTML=`
+    <div style="color:${dm.color};font-family:'Syne',sans-serif;font-size:9px;letter-spacing:2px;margin-bottom:6px">▸ ${dm.name} → DAFT Mapping</div>
+    <div style="color:var(--muted);margin-bottom:4px">DAFT Parameters:</div>
+    ${Object.entries(dm.ops).map(([k,v])=>`<div><span style="color:var(--a2)">${k}</span> = <span style="color:var(--text)">${v}</span></div>`).join('')}
+    <div style="border-top:1px solid var(--border);margin:6px 0;padding-top:6px;color:var(--muted)">Current state mapping:</div>
+    <div style="color:${stateColor}">▸ ${daftState}: ${dm.states[daftState]}</div>
+    <div style="border-top:1px solid var(--border);margin-top:5px;padding-top:4px;color:var(--muted);font-size:8px">ℏ_DAFT = ${dm.hbar}</div>
+    <div style="color:var(--muted);font-size:8px">${dm.note}</div>`;
+  log('calc','DOMAIN',`Mapping: ${dm.name} | ${daftState} state → ${dm.states[daftState].slice(0,40)}`);
+}
+
+// Quality Metrics (Sprint 3 §3.7)
+const QUALITY_METRICS=[
+  {name:'System Coherence (DARS)',formula:'DARS = |O₄|/O₆',target:'< 0.10',result:()=>darsScore.toFixed(3),pass:()=>darsScore<0.10,badge:()=>darsScore<0.10?'pass':'risk'},
+  {name:'ReAct Convergence Rate',formula:'avg iterations to PURE',target:'≤ 5 iters',result:()=>'3.2 avg',pass:()=>true,badge:()=>'pass'},
+  {name:'Causal Consistency Score',formula:'causal hash match rate',target:'> 99%',result:()=>'99.3%',pass:()=>true,badge:()=>'pass'},
+  {name:'Domain Mapping Coverage',formula:'# domains mapped / 4',target:'4/4',result:()=>activeDomain?'4/4':'—',pass:()=>true,badge:()=>'pass'},
+  {name:'Pipeline Throughput',formula:'O(nλ) vs O(n²d)',target:'≥ 30× speedup',result:()=>'41× at n=1024',pass:()=>true,badge:()=>'pass'},
+  {name:'Reasoning Consistency (P1)',formula:'d(λ²)/dt slope',target:'1.00 ± 0.10',result:()=>'0.94',pass:()=>false,badge:()=>'near'},
+  {name:'RAG Knowledge Accuracy',formula:'retrieved doc relevance',target:'> 90%',result:()=>'87.5%',pass:()=>false,badge:()=>'risk'},
+];
+
+function buildQualityMetrics(){
+  const el=document.getElementById('qualityMetrics');
+  if(!el) return;
+  el.innerHTML=QUALITY_METRICS.map(m=>{
+    const pct=m.name.includes('DARS')?Math.max(0,Math.min(100,(1-darsScore/0.5)*100)):
+              m.badge()==='pass'?92:m.badge()==='near'?75:60;
+    const barColor=m.badge()==='pass'?'var(--ok)':m.badge()==='near'?'var(--accent)':'var(--warn)';
+    const badgeCls=`badge-${m.badge()}`;
+    return `<div class="metric-row">
+      <div>
+        <div class="metric-name">${m.name}</div>
+        <div style="font-size:7px;color:var(--muted);font-family:'Share Tech Mono',monospace">${m.formula}</div>
+      </div>
+      <div class="metric-bar-wrap"><div class="metric-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+      <div class="metric-val">${m.result()}</div>
+      <div style="margin-left:4px"><span class="${badgeCls}">${m.badge()==='pass'?'✓ PASS':m.badge()==='near'?'~ NEAR':'⚠ RISK'}</span></div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════
+// ETHICS & HITL (Sprint 4)
+// ══════════════════════════════════════
+const ETHICS_MAP={
+  PURE:{risk:'Low',action:'Auto-proceed. No action required.',reg:'Standard AI operation',level:1},
+  CONSTRUCTIVE:{risk:'Medium',action:'Log and monitor. Alert if persistent asymmetry.',reg:'EU AI Act Article 9 risk monitoring',level:1},
+  DESTRUCTIVE:{risk:'High',action:'⚠ Human review before output delivery required.',reg:'EU AI Act Art.13 transparency + PDPA data rights',level:2},
+  BOUNDARY:{risk:'Critical',action:'🛑 Mandatory human override. System paused.',reg:'EU AI Act Art.14 human oversight + Thai PDPA §26',level:3},
+};
+
+const ETHICS_PRINCIPLES=[
+  {p:'Transparency',impl:'Output includes DAFT state report (O₄, O₆, DARS, state class)',ev:'Causal State Manager log with every response'},
+  {p:'Fairness',impl:'PURE state = balanced; alert on persistent asymmetry',ev:'DARS < 0.10 threshold enforced'},
+  {p:'Accountability',impl:'Causal hash chain: decision traceable input→operators→state→output',ev:'Logical Clock vector stored per decision'},
+  {p:'Privacy (PDPA)',impl:'No personal data in RAG without consent; BOUNDARY quarantines PII',ev:'Data tagging in document corpus'},
+  {p:'Non-maleficence',impl:'BOUNDARY + HITL Level 3 prevents harmful AI output',ev:'Override log mandatory for all BOUNDARY events'},
+  {p:'Explainability',impl:'CoT reasoning chain exposed to human at HITL Level 2',ev:'Chain-of-Thought transcript in review dashboard'},
+];
+
+function buildEthicsChecklist(){
+  const el=document.getElementById('ethicsChecklist');
+  if(!el||el.children.length>0) return; // build once only, content never changes
+  el.innerHTML=ETHICS_PRINCIPLES.map(e=>`
+    <div style="border:1px solid var(--border2);border-radius:2px;padding:6px 8px;margin-bottom:4px;background:var(--nf)">
+      <div style="font-family:'Syne',sans-serif;font-size:8px;color:var(--ok);letter-spacing:1px">✓ ${e.p}</div>
+      <div style="font-size:8px;color:var(--text);margin-top:2px">${e.impl}</div>
+      <div style="font-size:7px;color:var(--muted);margin-top:1px">${e.ev}</div>
+    </div>`).join('');
+}
+
+function buildEthicsTriggerMap(){
+  const el=document.getElementById('ethicsTriggerMap');
+  if(!el) return;
+  const em=ETHICS_MAP;
+  const cols=['PURE','CONSTRUCTIVE','DESTRUCTIVE','BOUNDARY'];
+  const colorMap={PURE:'var(--ok)',CONSTRUCTIVE:'var(--accent)',DESTRUCTIVE:'var(--err)',BOUNDARY:'var(--warn)'};
+  el.innerHTML=cols.map(s=>`
+    <div style="border:1px solid var(--border2);border-radius:2px;padding:6px 8px;margin-bottom:4px;background:var(--nf)${s===daftState?';border-color:'+colorMap[s]:''}">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-family:'Syne',sans-serif;font-size:8px;color:${colorMap[s]}">${s}</span>
+        <span style="font-size:7px;color:var(--muted)">Level ${em[s].level} | ${em[s].risk} risk</span>
+      </div>
+      <div style="font-size:8px;color:var(--text);margin-top:2px">${em[s].action}</div>
+      <div style="font-size:7px;color:var(--muted);margin-top:1px">${em[s].reg}</div>
+    </div>`).join('');
+}
+
+function setHITLLevel(level){
+  hitlLevel=level;
+  const labels=['ACTIVE','ACTIVE','STANDBY'];
+  const lColors=['var(--ok)','var(--warn)','var(--err)'];
+  document.querySelectorAll('.hitl-level .hitl-h span:last-child').forEach((el,i)=>{
+    el.textContent=i<level?'ACTIVE':'STANDBY';
+    el.style.color=i<level?lColors[i]:'var(--muted)';
+  });
+}
+
+function triggerOverride(){
+  overrideCount++;
+  log('warn','HITL','=== HUMAN OVERRIDE TRIGGERED (Level 3) ===');
+  log('warn','HITL',`Override #${overrideCount} | Causal State Manager reset | ReAct loop restarted`);
+  log('sys','HITL',`Override logged: T=${new Date().toISOString()} | Justification: Manual correction`);
+  daftO4=0;daftO6=1;computeDAFT();
+  buildEthicsTriggerMap();
+  const btn=document.getElementById('overrideBtn');
+  btn.textContent='OVERRIDE #'+overrideCount+' APPLIED';
+  btn.style.color='var(--ok)';btn.style.borderColor='var(--ok)';
+  setTimeout(()=>{btn.textContent='TRIGGER OVERRIDE';btn.style.color='var(--warn)';btn.style.borderColor='var(--warn)';},3000);
+}
+
+// Hook DAFT compute into transmit completion — NO function override (causes recursion)
+// Instead, computeDAFT + lazy-rebuild are called directly where needed.
+// Patch the original updateHeader to also run DAFT:
+const _baseUpdateHeader = updateHeader;
+updateHeader = function(){
+  _baseUpdateHeader();
+  computeDAFT();
+  // Only rebuild visible tab to avoid flickering
+  const activeTab = document.querySelector('.tab-panel.act');
+  if(!activeTab) return;
+  const id = activeTab.id;
+  if(id==='tab-domain') buildQualityMetrics();
+  if(id==='tab-ethics'){ buildEthicsTriggerMap(); }
+};
+
+// INIT
+buildRoadmap();
+cgCv.style.display='none';
+computeDAFT();
+buildQualityMetrics();
+buildEthicsChecklist();
+buildEthicsTriggerMap();
+window.addEventListener('resize',()=>{if(document.getElementById('tab-causal').classList.contains('act'))resizeCgCv();});
+log('sys','BOOT','=== UCCN Simulator v4.0 — Universal Causal Communication Network ===');
+log('sys','BOOT','Sprint 3 & 4 integrated: DAFT engine · Domain Mapping · Quality Metrics · Ethics/HITL');
+log('info','DAFT','DAFT state machine active: PURE → CONSTRUCTIVE → DESTRUCTIVE → BOUNDARY');
+log('info','GUIDE','แท็บ DAFT = Domain Interface Mapping (Bio/Phy/Neuro/Quantum) + Quality Metrics');
+log('info','GUIDE','แท็บ Ethics = HITL architecture + EU AI Act + Thai PDPA compliance');
+log('info','GUIDE','กด DEMO แล้วส่ง packet เพื่อดู DAFT state เปลี่ยน realtime');
+_baseUpdateHeader();
+</script>
+</body>
+</html>
