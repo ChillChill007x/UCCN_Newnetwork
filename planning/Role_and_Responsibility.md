@@ -160,4 +160,4 @@ Developer/Tester issue
 ---
 
 *© UCCN Research Project — Role and Responsibility v1.0*
-*จัดทำโดย นายวงศธร ธน.ยอด | 22/2/2026*
+

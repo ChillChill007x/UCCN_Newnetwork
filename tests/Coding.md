@@ -644,4 +644,3 @@ python -m unittest Coding.TestDAFTClassifier -v
 ---
 
 *© UCCN Research Project — Coding Standards v1.0*
-*จัดทำโดย นายคมชาญ น้อยเนียม (Tester/QA)*
