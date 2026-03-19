@@ -1,0 +1,304 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.wrap{padding:1rem 0;font-family:var(--font-sans)}
+.section-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.5rem}
+.stab{padding:6px 14px;border-radius:99px;border:0.5px solid var(--color-border-secondary);font-size:13px;cursor:pointer;color:var(--color-text-secondary);background:transparent;transition:all .15s}
+.stab.active{background:var(--color-background-info);color:var(--color-text-info);border-color:var(--color-border-info)}
+.section{display:none}.section.active{display:block}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:10px}
+.card-title{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.card-sub{font-size:13px;color:var(--color-text-secondary);line-height:1.6;margin-bottom:8px}
+.badge{font-size:11px;padding:2px 8px;border-radius:99px;font-weight:500}
+.b-green{background:var(--color-background-success);color:var(--color-text-success)}
+.b-blue{background:var(--color-background-info);color:var(--color-text-info)}
+.b-yellow{background:var(--color-background-warning);color:var(--color-text-warning)}
+.b-red{background:var(--color-background-danger);color:var(--color-text-danger)}
+.b-gray{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+.kv{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:13px}
+.kv:last-child{border-bottom:none}
+.kv-k{color:var(--color-text-secondary);font-family:var(--font-mono);font-size:12px}
+.kv-v{color:var(--color-text-primary);font-weight:500;text-align:right;max-width:60%}
+.formula{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:8px 12px;font-family:var(--font-mono);font-size:12px;color:var(--color-text-primary);margin:8px 0}
+.state-bar{display:flex;gap:4px;margin:10px 0}
+.state-pill{flex:1;padding:8px 4px;border-radius:var(--border-radius-md);text-align:center;font-size:11px;font-weight:500;cursor:pointer;transition:opacity .15s}
+.sp-pure{background:#E1F5EE;color:#0F6E56}
+.sp-con{background:#E6F1FB;color:#185FA5}
+.sp-des{background:#FCEBEB;color:#A32D2D}
+.sp-bnd{background:#FAEEDA;color:#854F0B}
+.state-detail{border-radius:var(--border-radius-md);padding:10px 14px;font-size:13px;line-height:1.6;margin-top:4px}
+.sd-pure{background:#E1F5EE;color:#085041}
+.sd-con{background:#E6F1FB;color:#0C447C}
+.sd-des{background:#FCEBEB;color:#791F1F}
+.sd-bnd{background:#FAEEDA;color:#633806}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mode-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px;background:var(--color-background-secondary)}
+.mode-name{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
+.mode-row{display:flex;justify-content:space-between;font-size:12px;color:var(--color-text-secondary);padding:2px 0}
+.pkt-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:13px}
+.pkt-row:last-child{border-bottom:none}
+.pkt-k{color:var(--color-text-secondary);font-family:var(--font-mono);font-size:11px}
+.pkt-v{color:var(--color-text-primary);font-weight:500}
+.slider-row{display:flex;align-items:center;gap:12px;margin:8px 0}
+.slider-row label{font-size:13px;color:var(--color-text-secondary);min-width:60px}
+.slider-row input{flex:1}
+.slider-row span{font-size:13px;font-weight:500;min-width:50px;text-align:right}
+.dars-meter{height:8px;border-radius:4px;background:var(--color-border-tertiary);margin:8px 0;overflow:hidden}
+.dars-fill{height:100%;border-radius:4px;transition:width .4s,background .4s}
+</style>
+
+<div class="wrap">
+<div class="section-tabs">
+  <button class="stab active" onclick="showSec('nodes')">Node</button>
+  <button class="stab" onclick="showSec('modes')">Signal Modes</button>
+  <button class="stab" onclick="showSec('physics')">Physics Values</button>
+  <button class="stab" onclick="showSec('packet')">Packet Fields</button>
+  <button class="stab" onclick="showSec('daft')">DAFT / DARS</button>
+  <button class="stab" onclick="showSec('paradox')">Paradox</button>
+</div>
+
+<div id="sec-nodes" class="section active">
+  <div class="card">
+    <div class="card-title">Node — โหนดในเครือข่าย</div>
+    <div class="card-sub">แต่ละโหนดคือ "สถานี" ในจักรวาล มีข้อมูลประจำตัวและตำแหน่งเชิงเวลา</div>
+    <div class="kv"><span class="kv-k">name</span><span class="kv-v">ชื่อโหนด เช่น Sol-Gateway</span></div>
+    <div class="kv"><span class="kv-k">location</span><span class="kv-v">ตำแหน่งทางกายภาพ เช่น Proxima-Cen</span></div>
+    <div class="kv"><span class="kv-k">pattern</span><span class="kv-v">บุคลิกโหนด เช่น stellar-relay</span></div>
+    <div class="kv"><span class="kv-k">tOffset (ly)</span><span class="kv-v">ตำแหน่งเชิงเวลา วัดเป็นปีแสง — ใช้คำนวณระยะและ paradox</span></div>
+    <div class="kv"><span class="kv-k">TX / RX</span><span class="kv-v">จำนวน packet ที่ส่งออก / รับเข้า — ใช้คำนวณ O₄</span></div>
+    <div class="kv"><span class="kv-k">_lts</span><span class="kv-v">Lamport Timestamp — เพิ่มทุกครั้งที่ส่ง รักษาลำดับ causal</span></div>
+    <div class="kv"><span class="kv-k">hasParadox</span><span class="kv-v">flag แดง = โหนดนี้มีปัญหา causal กับโหนดอื่น</span></div>
+  </div>
+  <div class="card">
+    <div class="card-title">สถานะโหนด (dot สี)</div>
+    <div class="kv"><span class="kv-k"><span class="badge b-green">● สีเขียว</span></span><span class="kv-v">Online ปกติ</span></div>
+    <div class="kv"><span class="kv-k"><span class="badge b-gray">● สีเทา</span></span><span class="kv-v">Offline</span></div>
+    <div class="kv"><span class="kv-k"><span class="badge b-red">● กระพริบแดง</span></span><span class="kv-v">ตรวจพบ Causal Paradox</span></div>
+  </div>
+</div>
+
+<div id="sec-modes" class="section">
+  <div class="card">
+    <div class="card-sub">เลือกได้หลาย mode พร้อมกัน — แต่ละ mode มีคุณสมบัติต่างกัน</div>
+  </div>
+  <div class="grid2">
+    <div class="mode-card">
+      <div class="mode-name" style="color:#BA7517">⚡ PHOTON</div>
+      <div class="mode-row"><span>speed</span><span>1.0c (เต็ม)</span></div>
+      <div class="mode-row"><span>SNR</span><span>30 dB</span></div>
+      <div class="mode-row"><span>bandwidth</span><span>1 THz</span></div>
+      <div class="mode-row"><span>ทะลุสสาร</span><span style="color:#A32D2D">ไม่ได้</span></div>
+      <div class="mode-row"><span>store-fwd</span><span style="color:#A32D2D">ไม่</span></div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-top:6px">เร็วที่สุด bandwidth สูงสุด แต่ถูกบล็อกด้วยสสาร</div>
+    </div>
+    <div class="mode-card">
+      <div class="mode-name" style="color:#185FA5">◉ NEUTRINO</div>
+      <div class="mode-row"><span>speed</span><span>0.999c</span></div>
+      <div class="mode-row"><span>SNR</span><span>10 dB</span></div>
+      <div class="mode-row"><span>bandwidth</span><span>100 MHz</span></div>
+      <div class="mode-row"><span>ทะลุสสาร</span><span style="color:#0F6E56">ได้</span></div>
+      <div class="mode-row"><span>store-fwd</span><span style="color:#A32D2D">ไม่</span></div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-top:6px">ทะลุผ่านทุกสิ่ง ไม่ต้อง line-of-sight</div>
+    </div>
+    <div class="mode-card">
+      <div class="mode-name" style="color:#534AB7">🌀 GRAVITON</div>
+      <div class="mode-row"><span>speed</span><span>1.0c</span></div>
+      <div class="mode-row"><span>SNR</span><span>5 dB</span></div>
+      <div class="mode-row"><span>bandwidth</span><span>1 MHz</span></div>
+      <div class="mode-row"><span>ทะลุสสาร</span><span style="color:#0F6E56">ได้</span></div>
+      <div class="mode-row"><span>store-fwd</span><span style="color:#A32D2D">ไม่</span></div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-top:6px">ทฤษฎีเท่านั้น bandwidth ต่ำสุด แต่ไม่มีสิ่งใดกั้นได้</div>
+    </div>
+    <div class="mode-card">
+      <div class="mode-name" style="color:#854F0B">📡 DTN</div>
+      <div class="mode-row"><span>speed</span><span>0.3c</span></div>
+      <div class="mode-row"><span>SNR</span><span>25 dB</span></div>
+      <div class="mode-row"><span>bandwidth</span><span>1 GHz</span></div>
+      <div class="mode-row"><span>ทะลุสสาร</span><span style="color:#A32D2D">ไม่ได้</span></div>
+      <div class="mode-row"><span>store-fwd</span><span style="color:#0F6E56">ใช่</span></div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-top:6px">ช้าสุดแต่เชื่อถือได้ เก็บ-รอ-ส่งต่อ ใช้จริงกับ NASA</div>
+    </div>
+  </div>
+</div>
+
+<div id="sec-physics" class="section">
+  <div class="card">
+    <div class="card-title">Physics Backend — คำนวณ real-time เมื่อเลือก src/dst/mode</div>
+    <div class="kv"><span class="kv-k">Distance (ly)</span><span class="kv-v">|tOffset_dst − tOffset_src| ระยะห่างเชิงเวลา</span></div>
+    <div class="kv"><span class="kv-k">Min Latency</span><span class="kv-v">distance ÷ c = เวลาต่ำสุดที่ photon ใช้เดินทาง</span></div>
+    <div class="kv"><span class="kv-k">Shannon Capacity</span><span class="kv-v">Σ B×log₂(1+SNR) รวมทุก mode ที่เปิด</span></div>
+    <div class="kv"><span class="kv-k">Causal Hash</span><span class="kv-v">CRC32(src|dst|payload|seq|modes) = ID เฉพาะของ packet</span></div>
+    <div class="kv"><span class="kv-k">Vector Clock</span><span class="kv-v">Lamport timestamp รักษาลำดับ causal ในระบบกระจาย</span></div>
+    <div class="kv"><span class="kv-k">DTN Bundle</span><span class="kv-v">payload + 64B header + 20B×modes = ขนาด bundle จริง</span></div>
+    <div class="kv"><span class="kv-k">Lorentz γ</span><span class="kv-v">1÷√(1−v²/c²) การขยายเวลาตาม Special Relativity</span></div>
+    <div class="kv"><span class="kv-k">Active Channels</span><span class="kv-v">จำนวน mode ที่ส่งพร้อมกัน</span></div>
+  </div>
+  <div class="card">
+    <div class="card-title">ลองคำนวณ Lorentz γ</div>
+    <div class="slider-row">
+      <label>Speed (×c)</label>
+      <input type="range" min="1" max="9999" value="9990" id="vslide" oninput="calcG()">
+      <span id="vout">0.999c</span>
+    </div>
+    <div class="formula" id="gout">γ = 1 / √(1 − 0.999²) = 22.366</div>
+    <div style="font-size:12px;color:var(--color-text-secondary)">ยิ่ง speed ใกล้ c → γ ยิ่งสูง → เวลาขยายมากขึ้น</div>
+  </div>
+</div>
+
+<div id="sec-packet" class="section">
+  <div class="card">
+    <div class="card-title">Packet Preview Fields</div>
+    <div class="card-sub">ทุกค่าแสดงใน Packet Preview ก่อนกด TRANSMIT</div>
+    <div class="pkt-row"><span class="pkt-k">PKT_ID</span><span class="pkt-v">CRC32 hash เฉพาะของ packet นี้</span></div>
+    <div class="pkt-row"><span class="pkt-k">SRC</span><span class="pkt-v">ชื่อโหนดต้นทาง</span></div>
+    <div class="pkt-row"><span class="pkt-k">DST</span><span class="pkt-v">ชื่อโหนดปลายทาง</span></div>
+    <div class="pkt-row"><span class="pkt-k">MODES</span><span class="pkt-v">signal modes ที่เลือก เช่น PHOTON·DTN</span></div>
+    <div class="pkt-row"><span class="pkt-k">MULTI_MODAL</span><span class="pkt-v">YES ถ้าเลือก mode มากกว่า 1</span></div>
+    <div class="pkt-row"><span class="pkt-k">T_OFFSET_Δ</span><span class="pkt-v">ระยะห่างเชิงเวลาระหว่าง src กับ dst</span></div>
+    <div class="pkt-row"><span class="pkt-k">CAUSAL_REF</span><span class="pkt-v">pattern ของ src → pattern ของ dst</span></div>
+    <div class="pkt-row"><span class="pkt-k">PAYLOAD</span><span class="pkt-v">เนื้อหาที่ส่ง (ตัดที่ 26 ตัวอักษร)</span></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Priority (0–9) — มีผลอย่างไร?</div>
+    <div class="slider-row">
+      <label>Priority</label>
+      <input type="range" min="0" max="9" value="5" id="pslide" oninput="calcP()">
+      <span id="pout">5</span>
+    </div>
+    <div class="formula" id="speedout">animation speed = 0.003 + 5×0.0002 = 0.004</div>
+    <div style="font-size:12px;color:var(--color-text-secondary)">Priority ยิ่งสูง packet วิ่งเร็วขึ้นบน canvas — ไม่กระทบ physics จริง</div>
+  </div>
+</div>
+
+<div id="sec-daft" class="section">
+  <div class="card">
+    <div class="card-title">DAFT สูตรคำนวณ</div>
+    <div class="formula">O₄ = |TX − RX| / (TX + RX)</div>
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px">วัดความไม่สมดุล: 0 = สมดุลสมบูรณ์, 1 = ส่งอย่างเดียวไม่มีรับ</div>
+    <div class="formula">O₆ = avg |tOffset_src − tOffset_dst| ทุก link</div>
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px">ระยะห่างเฉลี่ยระหว่างโหนด (floor = 0.01)</div>
+    <div class="formula">DARS = O₄ ÷ O₆</div>
+    <div style="font-size:12px;color:var(--color-text-secondary)">ยิ่งสูงยิ่งอันตราย</div>
+  </div>
+  <div class="card">
+    <div class="card-title">ลองคำนวณ DARS</div>
+    <div class="slider-row">
+      <label>TX</label>
+      <input type="range" min="0" max="20" value="10" id="txs" oninput="calcDars()">
+      <span id="txout">10</span>
+    </div>
+    <div class="slider-row">
+      <label>RX</label>
+      <input type="range" min="0" max="20" value="10" id="rxs" oninput="calcDars()">
+      <span id="rxout">10</span>
+    </div>
+    <div class="slider-row">
+      <label>O₆ (ly)</label>
+      <input type="range" min="1" max="50" value="10" id="o6s" oninput="calcDars()">
+      <span id="o6out">10.0</span>
+    </div>
+    <div class="dars-meter"><div class="dars-fill" id="darsfill" style="width:0%;background:#1D9E75"></div></div>
+    <div class="formula" id="darsout">O₄=0.000 | O₆=10.0 | DARS=0.000</div>
+    <div id="darsstate" class="state-detail sd-pure" style="margin-top:6px">● PURE — ระบบสมดุล ทำงานปกติ</div>
+  </div>
+  <div class="card">
+    <div class="card-title">4 DAFT States — คลิกดูรายละเอียด</div>
+    <div class="state-bar">
+      <div class="state-pill sp-pure" onclick="showState(0)">PURE</div>
+      <div class="state-pill sp-con" onclick="showState(1)">CONSTRUCTIVE</div>
+      <div class="state-pill sp-des" onclick="showState(2)">DESTRUCTIVE</div>
+      <div class="state-pill sp-bnd" onclick="showState(3)">BOUNDARY</div>
+    </div>
+    <div id="stateinfo" class="state-detail sd-pure">
+      DARS &lt; 0.10 — ระบบสมดุล TX≈RX · Auto-proceed ไม่ต้องดำเนินการใด · HITL Level 1
+    </div>
+  </div>
+</div>
+
+<div id="sec-paradox" class="section">
+  <div class="card">
+    <div class="card-title"><span class="badge b-red">GRANDFATHER</span></div>
+    <div class="card-sub">dst.tOffset อยู่ใน "อดีต" ของ src เกิน 10 ly</div>
+    <div class="formula">src.tOffset − dst.tOffset > 10 ly</div>
+    <div style="font-size:13px;color:var(--color-text-secondary)">ผล: BLOCKED — ส่งไม่ได้ เพราะข้อมูลจะไปเปลี่ยนอดีต</div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="badge b-red">CAUSAL_LOOP</span></div>
+    <div class="card-sub">A เคยส่งถึง B และ B เคยส่งถึง A แล้ว</div>
+    <div class="formula">dst._chain ∋ srcId AND src._chain ∋ dstId</div>
+    <div style="font-size:13px;color:var(--color-text-secondary)">ผล: BLOCKED — วงจรปิด ข้อมูลเป็นสาเหตุของตัวเอง</div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="badge b-red">BOOTSTRAP</span></div>
+    <div class="card-sub">ส่งกลับหาต้นทางมากกว่า 3 ครั้งใน 5 วินาที</div>
+    <div class="formula">round-trips from B→A within 5000ms > 3</div>
+    <div style="font-size:13px;color:var(--color-text-secondary)">ผล: BLOCKED — ข้อมูลไม่มีต้นกำเนิด</div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="badge b-yellow">HIGH T-OFFSET WARNING</span></div>
+    <div class="card-sub">ระยะห่างเกิน 50 ly แต่ไม่ถึงกับ block</div>
+    <div class="formula">|src.tOffset − dst.tOffset| > 50 ly</div>
+    <div style="font-size:13px;color:var(--color-text-secondary)">ผล: WARNING เท่านั้น — ส่งได้แต่ระวัง latency สูงมาก</div>
+  </div>
+</div>
+</div>
+
+<script>
+function showSec(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.stab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function calcG(){
+  const v=parseInt(document.getElementById('vslide').value)/10000;
+  const vv=Math.min(v,0.9999999);
+  const g=1/Math.sqrt(1-vv*vv);
+  document.getElementById('vout').textContent=v.toFixed(4)+'c';
+  document.getElementById('gout').textContent=`γ = 1 / √(1 − ${v.toFixed(4)}²) = ${g.toFixed(3)}`;
+}
+
+function calcP(){
+  const p=parseInt(document.getElementById('pslide').value);
+  document.getElementById('pout').textContent=p;
+  const spd=(0.003+p*0.0002).toFixed(4);
+  document.getElementById('speedout').textContent=`animation speed = 0.003 + ${p}×0.0002 = ${spd}`;
+}
+
+function calcDars(){
+  const tx=parseInt(document.getElementById('txs').value);
+  const rx=parseInt(document.getElementById('rxs').value);
+  const o6=parseInt(document.getElementById('o6s').value);
+  document.getElementById('txout').textContent=tx;
+  document.getElementById('rxout').textContent=rx;
+  document.getElementById('o6out').textContent=o6.toFixed(1);
+  const total=tx+rx;
+  const o4=total>0?Math.abs(tx-rx)/total:0;
+  const dars=o4/Math.max(o6,0.01);
+  const pct=Math.min(dars/0.6*100,100);
+  const fill=document.getElementById('darsfill');
+  fill.style.width=pct.toFixed(1)+'%';
+  fill.style.background=dars<0.10?'#1D9E75':dars<0.30?'#378ADD':dars<0.60?'#E24B4A':'#BA7517';
+  document.getElementById('darsout').textContent=`O₄=${o4.toFixed(3)} | O₆=${o6.toFixed(1)} | DARS=${dars.toFixed(3)}`;
+  const sd=document.getElementById('darsstate');
+  if(dars<0.10){sd.className='state-detail sd-pure';sd.textContent='● PURE — ระบบสมดุล ทำงานปกติ HITL Level 1';}
+  else if(dars<0.30){sd.className='state-detail sd-con';sd.textContent='◆ CONSTRUCTIVE — มีความไม่สมดุลเล็กน้อย Log & monitor';}
+  else if(dars<0.60){sd.className='state-detail sd-des';sd.textContent='▲ DESTRUCTIVE — ความไม่สมดุลสูง! HITL Level 2 (EU AI Act Art.13)';}
+  else{sd.className='state-detail sd-bnd';sd.textContent='⚠ BOUNDARY — วิกฤต! Human Override บังคับ (EU AI Act Art.14 + Thai PDPA §26)';}
+}
+
+const stateData=[
+  {cls:'sd-pure',text:'DARS < 0.10 — ระบบสมดุล TX≈RX · Auto-proceed ไม่ต้องดำเนินการใด · HITL Level 1'},
+  {cls:'sd-con',text:'DARS 0.10–0.29 — TX มากกว่า RX เล็กน้อย · Log และ monitor · แจ้งเตือนถ้าต่อเนื่อง · EU AI Act Art.9'},
+  {cls:'sd-des',text:'DARS 0.30–0.59 — ความไม่สมดุลสูง! · HITL Level 2 ต้องให้คนทบทวนก่อน · EU AI Act Art.13 transparency'},
+  {cls:'sd-bnd',text:'DARS ≥ 0.60 — วิกฤตสูงสุด! · ระบบหยุดรอ override · HITL Level 3 บังคับ · EU AI Act Art.14 + Thai PDPA §26'},
+];
+function showState(i){
+  const el=document.getElementById('stateinfo');
+  el.className='state-detail '+stateData[i].cls;
+  el.textContent=stateData[i].text;
+}
+
+calcG(); calcP(); calcDars();
+</script>
